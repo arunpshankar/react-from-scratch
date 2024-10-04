@@ -6,6 +6,18 @@ __pycache__/
 # C extensions
 *.so
 
+# credentials 
+credentials
+credentials/
+
+# .DS_Store 
+.DS_Store
+.DS_Store/
+
+# Venv 
+.react-from-scratch
+.react-from-scratch/
+
 # Distribution / packaging
 .Python
 build/
