@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "react-from-scratch"
+version = "0.0.1"
+description = "Examples demonstrating the ReAct pattern in LLM prompting optimized for Gemini."
+authors = ["Arun Shankar <arunpshankar@google.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{ include = "react", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pyyaml = "^6.0"
+requests = "^2.31.0"
+google-search-results = "^2.4.2"
+google-cloud-aiplatform = "1.67.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
