@@ -18,6 +18,15 @@ credentials/
 .react-from-scratch
 .react-from-scratch/
 
+# others 
+__pycache__/
+*.pyc
+.env
+venv/
+.envrc
+.idea/
+.vscode/
+
 # Distribution / packaging
 .Python
 build/
