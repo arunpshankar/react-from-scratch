@@ -16,10 +16,8 @@ source .react-from-scratch/bin/activate
 
 pip install --upgrade pip
 
-pip install - r requirements.txt
+pip install poetry
 
-this basically installs pipx which we need to use with poetry 
-Pipx installs packages in isolated environments, while pip does not. This prevents conflicts among Python programs that share dependencies
+poetry install 
 
-
-
+export PYTHONPATH=$PYTHONPATH:.
