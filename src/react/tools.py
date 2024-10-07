@@ -1,20 +1,20 @@
 from src.config.logging import logger
 from typing import Optional
 import wikipediaapi
-
+import json
 
 def wikipedia(query: str) -> Optional[str]:
     """
-    Fetch a Wikipedia paragraph for a given search query using Wikipedia-API.
+    Fetch Wikipedia information for a given search query using Wikipedia-API and return as JSON.
 
     Args:
         query (str): The search query string.
 
     Returns:
-        Optional[str]: A paragraph built from the first search result, or None if no result is found.
+        Optional[str]: A JSON string containing the query, title, and summary, or None if no result is found.
     """
     # Initialize Wikipedia API with a user agent
-    wiki = wikipediaapi.Wikipedia(user_agent='ReAct Agents (shankar.arunp@gmail.com)', 
+    wiki = wikipediaapi.Wikipedia(user_agent='ReAct Agents (shankar.arunp@gmail.com)',
                                   language='en')
 
     try:
@@ -22,10 +22,14 @@ def wikipedia(query: str) -> Optional[str]:
         page = wiki.page(query)
 
         if page.exists():
-            # Build a paragraph from the page summary
-            paragraph = f"{page.title}: {page.summary[:100]}..."
+            # Create a dictionary with query, title, and summary
+            result = {
+                "query": query,
+                "title": page.title,
+                "summary": page.summary
+            }
             logger.info(f"Successfully retrieved summary for: {query}")
-            return paragraph
+            return json.dumps(result, ensure_ascii=False, indent=2)
         else:
             logger.info(f"No results found for query: {query}")
             return None
@@ -40,6 +44,6 @@ if __name__ == '__main__':
     for query in queries:
         result = wikipedia(query)
         if result:
-            print(f"Paragraph for '{query}': {result}\n")
+            print(f"JSON result for '{query}':\n{result}\n")
         else:
-            print(f"No paragraph found for '{query}'\n")
+            print(f"No result found for '{query}'\n")
