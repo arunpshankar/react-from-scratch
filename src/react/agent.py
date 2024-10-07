@@ -4,10 +4,12 @@ from src.tools.wiki import search as wiki_search
 from vertexai.generative_models import Part 
 from src.config.logging import logger 
 from src.llm.gemini import generate
+from src.config.setup import config
 from typing import Callable
 from typing import Dict 
 from typing import List 
 import re
+import os 
 
 
 class Tool:
@@ -119,7 +121,7 @@ Answer: The capital of France is Paris
 """
 
 # Initialize the Gemini model
-gemini_model = GenerativeModel("gemini-pro")
+gemini_model = GenerativeModel(config.GEMINI_MODEL_NAME)
 
 react_agent = ReActAgent(system=prompt, model=gemini_model)
 react_agent.add_tool(wikipedia_tool)
