@@ -6,10 +6,7 @@ from src.config.logging import logger
 from src.llm.gemini import generate
 from src.config.setup import config
 from typing import Callable
-from typing import Dict 
-from typing import List 
 import re
-import os 
 
 
 class Tool:
@@ -54,7 +51,7 @@ class ReActAgent:
             
             if response:
                 logger.info("Gemini model executed successfully.")
-                return response.get("content", "")
+                return response
             else:
                 logger.error("Error: Empty response from Gemini model.")
                 return "Error: Unable to generate a response."
@@ -62,26 +59,9 @@ class ReActAgent:
             logger.error(f"Error executing Gemini model: {e}")
             raise
 
-def wikipedia(q: str) -> str:
-    try:
-        result = wiki_search(q)
-        logger.info(f"Wikipedia search for '{q}' completed successfully.")
-        return result
-    except Exception as e:
-        logger.error(f"Error during Wikipedia search for '{q}': {e}")
-        raise
-
-def google_search(q: str) -> str:
-    try:
-        result = google_search(q)
-        logger.info(f"Google search for '{q}' completed successfully.")
-        return result
-    except Exception as e:
-        logger.error(f"Error during Google search for '{q}': {e}")
-        raise
 
 # Define tools
-wikipedia_tool = Tool(name="wikipedia", function=wikipedia)
+wikipedia_tool = Tool(name="wikipedia", function=wiki_search)
 google_search_tool = Tool(name="google_search", function=google_search)
 
 # Initialize agent and add tools

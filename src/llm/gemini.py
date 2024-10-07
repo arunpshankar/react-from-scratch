@@ -46,7 +46,7 @@ def create_safety_settings() -> Dict[HarmCategory, HarmBlockThreshold]:
         raise
 
 
-def generate(model: GenerativeModel, contents: List[Part]) -> Optional[Dict]:
+def generate(model: GenerativeModel, contents: List[Part]) -> Optional[str]:
     """
     Generates a response using the provided model and contents.
     
@@ -55,7 +55,7 @@ def generate(model: GenerativeModel, contents: List[Part]) -> Optional[Dict]:
         contents (List[Part]): The list of content parts.
     
     Returns:
-        Optional[Dict]: The generated response as a dictionary, or None if an error occurs.
+        Optional[str]: The generated response text, or None if an error occurs.
     """
     try:
         logger.info("Generating response from model")
@@ -69,13 +69,8 @@ def generate(model: GenerativeModel, contents: List[Part]) -> Optional[Dict]:
             logger.error("Empty response from the model")
             return None
 
-        try:
-            parsed_response = json.loads(response.text)
-            logger.info("Successfully parsed JSON response")
-            return parsed_response
-        except json.JSONDecodeError:
-            logger.error("Error decoding JSON response")
-            return None
+        logger.info("Successfully generated response")
+        return response.text
     except Exception as e:
         logger.error(f"Error generating response: {e}")
         return None
