@@ -1021,7 +1021,20 @@ h2 = ["h2 (>=4,<5)"]
 socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
 zstd = ["zstandard (>=0.18.0)"]
 
+[[package]]
+name = "wikipedia-api"
+version = "0.7.1"
+description = "Python Wrapper for Wikipedia"
+optional = false
+python-versions = "*"
+files = [
+    {file = "wikipedia_api-0.7.1.tar.gz", hash = "sha256:c72296adc0a6d8166d353a501f907add5db140179df462fc1cc0171c1c1bca00"},
+]
+
+[package.dependencies]
+requests = "*"
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "563c07a5c85883a7ed8ef8a9b86ef9bf6ad30b11ba52a4beed69bab7a6653a4b"
+content-hash = "8dc7387445c9d87e6895cd8f290de80f29ace71cc8a529c9caa17e2482b166d8"

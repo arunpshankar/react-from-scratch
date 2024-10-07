@@ -1,58 +1,45 @@
-from src.config.logging import logger 
+from src.config.logging import logger
 from typing import Optional
-import requests
+import wikipediaapi
 
 
-def wikipedia(q: str) -> Optional[str]:
+def wikipedia(query: str) -> Optional[str]:
     """
-    Fetches a Wikipedia snippet for a given search query using Wikipedia's API.
+    Fetch a Wikipedia paragraph for a given search query using Wikipedia-API.
 
     Args:
-        q (str): The search query string.
+        query (str): The search query string.
 
     Returns:
-        Optional[str]: The first search result's snippet from Wikipedia, or None if no result is found.
+        Optional[str]: A paragraph built from the first search result, or None if no result is found.
     """
-    url = "https://en.wikipedia.org/w/api.php"
-    params = {
-        "action": "query",
-        "list": "search",
-        "srsearch": q,
-        "format": "json"
-    }
+    # Initialize Wikipedia API with a user agent
+    wiki = wikipediaapi.Wikipedia(user_agent='ReAct Agents (shankar.arunp@gmail.com)', 
+                                  language='en')
 
     try:
-        logger.info(f"Sending request to Wikipedia API for query: {q}")
-        response = requests.get(url, params=params)
-        response.raise_for_status()  # Raises an exception for HTTP errors
-        data = response.json()
+        logger.info(f"Searching Wikipedia for: {query}")
+        page = wiki.page(query)
 
-        if "query" in data and data["query"]["search"]:
-            snippet = data["query"]["search"][0]["snippet"]
-            logger.info(f"Received snippet: {snippet}")
-            return snippet
+        if page.exists():
+            # Build a paragraph from the page summary
+            paragraph = f"{page.title}: {page.summary[:100]}..."
+            logger.info(f"Successfully retrieved summary for: {query}")
+            return paragraph
         else:
-            logger.info(f"No results found for query: {q}")
+            logger.info(f"No results found for query: {query}")
             return None
 
-    except requests.exceptions.RequestException as e:
-        logger.error(f"An error occurred while making the request: {e}")
+    except Exception as e:
+        logger.exception(f"An error occurred while processing the Wikipedia query: {e}")
         return None
-    except KeyError as e:
-        logger.error(f"Unexpected response structure: {e}")
-        return None
-
 
 if __name__ == '__main__':
-    # Examples of using the wikipedia function
+    queries = ['Sachin Tendulkar', 'Albert Einstein']
 
-    queries = ['Sachin Tendulkar', 'Python programming', 'Albert Einstein']
-    
     for query in queries:
-        logger.info(f"Fetching Wikipedia snippet for: {query}")
         result = wikipedia(query)
-        
         if result:
-            print(f"Snippet for '{query}': {result}\n")
+            print(f"Paragraph for '{query}': {result}\n")
         else:
-            print(f"No snippet found for '{query}'\n")
+            print(f"No paragraph found for '{query}'\n")
