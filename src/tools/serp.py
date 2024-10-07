@@ -4,6 +4,7 @@ from typing import Union, Tuple, Dict, Any, List
 import requests
 import json
 
+
 # Static paths
 CREDENTIALS_PATH = './credentials/key.yml'
 
@@ -24,7 +25,7 @@ class SerpAPIClient:
         self.api_key = api_key
         self.base_url = "https://serpapi.com/search.json"
 
-    def search(self, query: str, engine: str = "google", location: str = "") -> Union[Dict[str, Any], Tuple[int, str]]:
+    def __call__(self, query: str, engine: str = "google", location: str = "") -> Union[Dict[str, Any], Tuple[int, str]]:
         """
         Perform Google search using the SERP API.
 
@@ -58,6 +59,7 @@ class SerpAPIClient:
             logger.error(f"Request to SERP API failed: {e}")
             return response.status_code, str(e)
 
+
 def load_api_key(credentials_path: str) -> str:
     """
     Load the API key from the specified YAML file.
@@ -80,6 +82,7 @@ def load_api_key(credentials_path: str) -> str:
     config = load_yaml(credentials_path)
     return config['serp']['key']
 
+
 def log_top_search_results(results: Dict[str, Any], top_n: int = 10) -> None:
     """
     Log the top N search results in a formatted manner.
@@ -99,6 +102,7 @@ def log_top_search_results(results: Dict[str, Any], top_n: int = 10) -> None:
         logger.info(f"  Link: {result.get('link')}")
         logger.info(f"  Snippet: {result.get('snippet')}")
         logger.info('-' * 100)
+
 
 def format_top_search_results(results: Dict[str, Any], top_n: int = 10) -> List[Dict[str, Any]]:
     """
@@ -126,7 +130,8 @@ def format_top_search_results(results: Dict[str, Any], top_n: int = 10) -> List[
         for result in results.get('organic_results', [])[:top_n]
     ]
 
-def run(search_query: str, location: str) -> str:
+
+def search(search_query: str, location: str) -> str:
     """
     Main function to execute the Google search using SERP API, log the top results,
     and return them as a JSON string with updated format.
@@ -150,7 +155,7 @@ def run(search_query: str, location: str) -> str:
     serp_client = SerpAPIClient(api_key)
 
     # Perform the search
-    results = serp_client.search(search_query, location=location)
+    results = serp_client(search_query, location=location)
 
     # Check if the search was successful
     if isinstance(results, dict):
@@ -167,8 +172,9 @@ def run(search_query: str, location: str) -> str:
         logger.error(error_json)
         return error_json
 
+
 if __name__ == "__main__":
     search_query = "greek restaurants"
     location = 'frisco, texas'
-    result_json = run(search_query, location)
+    result_json = search(search_query, location)
     print(result_json)

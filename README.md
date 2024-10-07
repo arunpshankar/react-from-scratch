@@ -24,4 +24,5 @@ pip install poetry
 
 poetry install 
 
+export PYTHONDONTWRITEBYTECODE=1
 export PYTHONPATH=$PYTHONPATH:.

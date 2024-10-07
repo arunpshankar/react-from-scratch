@@ -4,7 +4,7 @@ import wikipediaapi
 import json
 
 
-def wikipedia(query: str) -> Optional[str]:
+def search(query: str) -> Optional[str]:
     """
     Fetch Wikipedia information for a given search query using Wikipedia-API and return as JSON.
 
@@ -44,7 +44,7 @@ if __name__ == '__main__':
     queries = ['Sachin Tendulkar', 'Albert Einstein']
 
     for query in queries:
-        result = wikipedia(query)
+        result = search(query)
         if result:
             print(f"JSON result for '{query}':\n{result}\n")
         else:
