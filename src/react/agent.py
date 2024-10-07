@@ -1,14 +1,14 @@
-import re
-import logging
-from src.llm.gemini import generate, create_generation_config, create_safety_settings 
-from src.tools.wiki import search as wiki_search
+from vertexai.generative_models import GenerativeModel
 from src.tools.serp import search as google_search
-from typing import Callable, Dict, List
-from vertexai.generative_models import GenerativeModel, Part
+from src.tools.wiki import search as wiki_search
+from vertexai.generative_models import Part 
+from src.config.logging import logger 
+from src.llm.gemini import generate
+from typing import Callable
+from typing import Dict 
+from typing import List 
+import re
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 class Tool:
     def __init__(self, name: str, function: Callable[[str], str]):
@@ -23,6 +23,7 @@ class Tool:
         except Exception as e:
             logger.error(f"Error executing tool '{self.name}': {e}")
             raise
+
 
 class ReActAgent:
     def __init__(self, system: str, model: GenerativeModel):
@@ -46,9 +47,7 @@ class ReActAgent:
     def execute(self) -> str:
         try:
             contents = [Part.from_text(msg["content"]) for msg in self.messages]
-            generation_config = create_generation_config()
-            safety_settings = create_safety_settings()
-            
+    
             response = generate(self.model, contents)
             
             if response:

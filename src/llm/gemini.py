@@ -1,16 +1,14 @@
-from typing import Dict, List, Optional
+from vertexai.generative_models import HarmBlockThreshold
+from vertexai.generative_models import GenerationConfig
+from vertexai.generative_models import GenerativeModel
+from vertexai.generative_models import HarmCategory
+from vertexai.generative_models import Part
+from src.config.logging import logger
+from typing import Optional
+from typing import Dict
+from typing import List 
 import json
 
-from vertexai.generative_models import (
-    GenerationConfig,
-    GenerativeModel,
-    HarmCategory,
-    HarmBlockThreshold,
-    Part,
-)
-
-from src.config.logging import logger
-from src.config.setup import config
 
 def create_generation_config() -> GenerationConfig:
     """Creates and returns a generation configuration."""
@@ -29,6 +27,7 @@ def create_generation_config() -> GenerationConfig:
         logger.error(f"Error creating generation configuration: {e}")
         raise
 
+
 def create_safety_settings() -> Dict[HarmCategory, HarmBlockThreshold]:
     """Creates safety settings for content generation."""
     try:
@@ -45,6 +44,7 @@ def create_safety_settings() -> Dict[HarmCategory, HarmBlockThreshold]:
     except Exception as e:
         logger.error(f"Error creating safety settings: {e}")
         raise
+
 
 def generate(model: GenerativeModel, contents: List[Part]) -> Optional[Dict]:
     """
