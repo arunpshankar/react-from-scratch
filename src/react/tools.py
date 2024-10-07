@@ -3,6 +3,7 @@ from typing import Optional
 import wikipediaapi
 import json
 
+
 def wikipedia(query: str) -> Optional[str]:
     """
     Fetch Wikipedia information for a given search query using Wikipedia-API and return as JSON.
@@ -37,6 +38,7 @@ def wikipedia(query: str) -> Optional[str]:
     except Exception as e:
         logger.exception(f"An error occurred while processing the Wikipedia query: {e}")
         return None
+
 
 if __name__ == '__main__':
     queries = ['Sachin Tendulkar', 'Albert Einstein']
