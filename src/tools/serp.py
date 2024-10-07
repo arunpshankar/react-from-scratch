@@ -1,16 +1,11 @@
 from src.config.logging import logger
 from src.utils.io import load_yaml
-from typing import Union
-from typing import Tuple
-from typing import Dict
-from typing import Any 
+from typing import Union, Tuple, Dict, Any, List
 import requests
-import json 
+import json
 
 # Static paths
 CREDENTIALS_PATH = './credentials/key.yml'
-SEARCH_RESULTS_OUTPUT_PATH = './data/patterns/web_search/output/search/top_search_results.json'
-
 
 class SerpAPIClient:
     """
@@ -63,7 +58,6 @@ class SerpAPIClient:
             logger.error(f"Request to SERP API failed: {e}")
             return response.status_code, str(e)
 
-
 def load_api_key(credentials_path: str) -> str:
     """
     Load the API key from the specified YAML file.
@@ -86,7 +80,6 @@ def load_api_key(credentials_path: str) -> str:
     config = load_yaml(credentials_path)
     return config['serp']['key']
 
-
 def log_top_search_results(results: Dict[str, Any], top_n: int = 10) -> None:
     """
     Log the top N search results in a formatted manner.
@@ -107,39 +100,36 @@ def log_top_search_results(results: Dict[str, Any], top_n: int = 10) -> None:
         logger.info(f"  Snippet: {result.get('snippet')}")
         logger.info('-' * 100)
 
-
-def save_top_search_results_to_json(results: Dict[str, Any], output_path: str, top_n: int = 10) -> None:
+def format_top_search_results(results: Dict[str, Any], top_n: int = 10) -> List[Dict[str, Any]]:
     """
-    Save the top N search results to a JSON file in a formatted manner.
+    Format the top N search results into a list of dictionaries with updated key names.
 
     Parameters:
     -----------
     results : Dict[str, Any]
         The search results returned from the SERP API.
-    output_path : str
-        The file path where the JSON file will be saved.
     top_n : int, optional
-        The number of top search results to save (default is 10).
+        The number of top search results to format (default is 10).
+
+    Returns:
+    --------
+    List[Dict[str, Any]]
+        A list of dictionaries containing the formatted top search results with updated key names.
     """
-    top_results = []
-    for i, result in enumerate(results.get('organic_results', [])[:top_n], start=1):
-        top_results.append({
-            "Position": result.get('position'),
-            "Title": result.get('title'),
-            "Link": result.get('link'),
-            "Snippet": result.get('snippet')
-        })
+    return [
+        {
+            "position": result.get('position'),
+            "title": result.get('title'),
+            "link": result.get('link'),
+            "snippet": result.get('snippet')
+        }
+        for result in results.get('organic_results', [])[:top_n]
+    ]
 
-    with open(output_path, 'w') as json_file:
-        json.dump({"Top Results": top_results}, json_file, indent=4)
-
-    logger.info(f"Top {top_n} search results saved to {output_path}")
-
-
-def run(search_query: str, location: str):
+def run(search_query: str, location: str) -> str:
     """
     Main function to execute the Google search using SERP API, log the top results,
-    and save them to a JSON file.
+    and return them as a JSON string with updated format.
 
     Parameters:
     -----------
@@ -147,8 +137,12 @@ def run(search_query: str, location: str):
         The search query to be executed using the SERP API.
     location : str
         The location to include in the search query.
-    """
 
+    Returns:
+    --------
+    str
+        A JSON string containing the top search results or an error message, with updated key names.
+    """
     # Load the API key
     api_key = load_api_key(CREDENTIALS_PATH)
 
@@ -163,15 +157,18 @@ def run(search_query: str, location: str):
         # Log the top search results
         log_top_search_results(results)
 
-        # Save the top search results to a JSON file
-        save_top_search_results_to_json(results, SEARCH_RESULTS_OUTPUT_PATH)
+        # Format and return the top search results as JSON with updated key names
+        top_results = format_top_search_results(results)
+        return json.dumps({"top_results": top_results}, indent=2)
     else:
         # Handle the error response
         status_code, error_message = results
-        logger.error(f"Search failed with status code {status_code}: {error_message}")
-
+        error_json = json.dumps({"error": f"Search failed with status code {status_code}: {error_message}"})
+        logger.error(error_json)
+        return error_json
 
 if __name__ == "__main__":
     search_query = "greek restaurants"
     location = 'frisco, texas'
-    run(search_query, location)
+    result_json = run(search_query, location)
+    print(result_json)
