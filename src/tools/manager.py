@@ -10,6 +10,7 @@ from enum import auto
 
 
 Observation = Union[str, Exception]
+
 class Name(Enum):
     """
     Enumeration of available tools.
