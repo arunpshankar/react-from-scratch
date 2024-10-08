@@ -83,27 +83,6 @@ def load_api_key(credentials_path: str) -> str:
     return config['serp']['key']
 
 
-def log_top_search_results(results: Dict[str, Any], top_n: int = 10) -> None:
-    """
-    Log the top N search results in a formatted manner.
-
-    Parameters:
-    -----------
-    results : Dict[str, Any]
-        The search results returned from the SERP API.
-    top_n : int, optional
-        The number of top search results to log (default is 10).
-    """
-    logger.info(f"Top {top_n} Search Results:")
-    for i, result in enumerate(results.get('organic_results', [])[:top_n], start=1):
-        logger.info(f"Result #{i}:")
-        logger.info(f"  Position: {result.get('position')}")
-        logger.info(f"  Title: {result.get('title')}")
-        logger.info(f"  Link: {result.get('link')}")
-        logger.info(f"  Snippet: {result.get('snippet')}")
-        logger.info('-' * 100)
-
-
 def format_top_search_results(results: Dict[str, Any], top_n: int = 10) -> List[Dict[str, Any]]:
     """
     Format the top N search results into a list of dictionaries with updated key names.
@@ -131,17 +110,16 @@ def format_top_search_results(results: Dict[str, Any], top_n: int = 10) -> List[
     ]
 
 
-def search(search_query: str, location: str) -> str:
+def search(search_query: str, location: str = "") -> str:
     """
-    Main function to execute the Google search using SERP API, log the top results,
-    and return them as a JSON string with updated format.
+    Main function to execute the Google search using SERP API and return the top results as a JSON string.
 
     Parameters:
     -----------
     search_query : str
         The search query to be executed using the SERP API.
-    location : str
-        The location to include in the search query.
+    location : str, optional
+        The location to include in the search query (default is an empty string).
 
     Returns:
     --------
@@ -159,9 +137,6 @@ def search(search_query: str, location: str) -> str:
 
     # Check if the search was successful
     if isinstance(results, dict):
-        # Log the top search results
-        log_top_search_results(results)
-
         # Format and return the top search results as JSON with updated key names
         top_results = format_top_search_results(results)
         return json.dumps({"top_results": top_results}, indent=2)
@@ -174,7 +149,6 @@ def search(search_query: str, location: str) -> str:
 
 
 if __name__ == "__main__":
-    search_query = "greek restaurants"
-    location = 'frisco, texas'
-    result_json = search(search_query, location)
+    search_query = "greek restaurants in miami fl"
+    result_json = search(search_query, '')
     print(result_json)

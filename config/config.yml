@@ -3,4 +3,4 @@ credentials_json: ./credentials/key.json
 anthropic_region: us-east5
 gemini_region: us-central1
 anthropic_model: claude-3-5-sonnet@20240620 
-gemini_model: gemini-1.5-pro-002
+gemini_model: gemini-1.5-pro-001

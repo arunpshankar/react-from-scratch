@@ -7,13 +7,13 @@ from src.config.logging import logger
 from typing import Optional
 from typing import Dict
 from typing import List 
-import json
 
 
-def create_generation_config() -> GenerationConfig:
-    """Creates and returns a generation configuration."""
+def _create_generation_config() -> GenerationConfig:
+    """
+    Creates and returns a generation configuration.
+    """
     try:
-        logger.info("Creating generation configuration")
         gen_config = GenerationConfig(
             temperature=0.0,
             top_p=1.0,
@@ -21,17 +21,15 @@ def create_generation_config() -> GenerationConfig:
             max_output_tokens=8192,
             seed=12345
         )
-        logger.info("Successfully created generation configuration")
         return gen_config
     except Exception as e:
         logger.error(f"Error creating generation configuration: {e}")
         raise
 
 
-def create_safety_settings() -> Dict[HarmCategory, HarmBlockThreshold]:
+def _create_safety_settings() -> Dict[HarmCategory, HarmBlockThreshold]:
     """Creates safety settings for content generation."""
     try:
-        logger.info("Creating safety settings")
         safety_settings = {
             HarmCategory.HARM_CATEGORY_UNSPECIFIED: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
@@ -39,7 +37,6 @@ def create_safety_settings() -> Dict[HarmCategory, HarmBlockThreshold]:
             HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE
         }
-        logger.info("Successfully created safety settings")
         return safety_settings
     except Exception as e:
         logger.error(f"Error creating safety settings: {e}")
@@ -61,8 +58,8 @@ def generate(model: GenerativeModel, contents: List[Part]) -> Optional[str]:
         logger.info("Generating response from model")
         response = model.generate_content(
             contents,
-            generation_config=create_generation_config(),
-            safety_settings=create_safety_settings()
+            generation_config=_create_generation_config(),
+            safety_settings=_create_safety_settings()
         )
 
         if not response.text:
