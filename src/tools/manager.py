@@ -3,6 +3,7 @@ from src.tools.wiki import search as wiki_search
 from src.config.logging import logger
 from pydantic import BaseModel
 from typing import Callable
+from pydantic import Field 
 from typing import Union 
 from typing import Dict 
 from enum import Enum
@@ -26,21 +27,20 @@ class Choice(BaseModel):
     """
     Represents a tool choice with a reason.
     """
-    name: Name
-    reason: str
+    name: Name = Field(..., description="Name of the selected tool")
+    reason: str = Field(..., description="Reason for selecting this tool")
 
 
 class Tool:
     """
     Represents a tool with its execution function.
     """
-    
-    def __init__(self, name: Name, func: Callable[[str]]):
+    def __init__(self, name: Name, func: Callable[[str], Observation]):
         self.name = name
         self.func = func
     
     def use(self, query: str) -> Observation:
-        """Execute the tool's function and handle exceptions."""
+        """Execute the tool's function for a given query and handle exceptions."""
         try:
             return self.func(query)
         except Exception as e:
@@ -48,31 +48,37 @@ class Tool:
             return e
 
 
-class ToolManager:
+class Manager:
     """
     Manages tool registration, selection, and execution.
     """
-    
     def __init__(self) -> None:
-        self.tools: Dict[Name, Tool] = {}
+        self.tools: Dict[Name, Tool] = {}  # Initialize directly without Field
     
-    def register_tool(self, name: Name, func: Callable[[str]]) -> None:
+    def register(self, name: Name, func: Callable[[str], Observation]) -> None:
         """
         Register a new tool.
         """
         self.tools[name] = Tool(name, func)
     
-    def execute_tool(self, name: Name, query: str) -> Observation:
+    def act(self, name: Name, query: str) -> Observation:
         """
-        Execute a specific tool with the given query.
+        Retrieve and use a registered tool to process the given query.
+
+        Parameters:
+            name (Name): The name of the tool to use.
+            query (str): The input query string.
+
+        Returns:
+            Observation: The result of the tool's execution or an error.
         """
         if name not in self.tools:
             raise ValueError(f"Tool {name} not registered")
         
         processed_query = query.split(' ', 1)[1] if ' ' in query else query
-        return self.tools[name].act(processed_query)
+        return self.tools[name].use(processed_query)
     
-    def choose_tool(self, query: str) -> Choice:
+    def choose(self, query: str) -> Choice:
         """
         Choose the appropriate tool based on the query prefix.
         """
@@ -92,12 +98,12 @@ class ToolManager:
 
 def run() -> None:
     """
-    Run test cases for the ToolManager.
+    Initialize manager, register tools, and process test queries.
     """
-    tool_manager = ToolManager()
+    manager = Manager()
     
-    tool_manager.register_tool(Name.WIKIPEDIA, wiki_search)
-    tool_manager.register_tool(Name.GOOGLE, google_search)
+    manager.register(Name.WIKIPEDIA, wiki_search)
+    manager.register(Name.GOOGLE, google_search)
     
     test_cases = [
         "/people kamala harris",
@@ -107,8 +113,8 @@ def run() -> None:
     
     for i, query in enumerate(test_cases, 1):
         try:
-            choice = tool_manager.choose_tool(query)
-            result = tool_manager.execute_tool(choice.name, query)
+            choice = manager.choose(query)
+            result = manager.act(choice.name, query)
             
             logger.info(f"Test Case {i}:")
             logger.info(f"Query: {query}")
