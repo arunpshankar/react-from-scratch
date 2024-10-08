@@ -57,11 +57,15 @@ class ToolManager:
         self.tools: Dict[ToolName, Tool] = {}
     
     def register_tool(self, name: ToolName, func: Callable[[str], ToolResult]) -> None:
-        """Register a new tool."""
+        """
+        Register a new tool.
+        """
         self.tools[name] = Tool(name, func)
     
     def execute_tool(self, tool_name: ToolName, query: str) -> ToolResult:
-        """Execute a specific tool with the given query."""
+        """
+        Execute a specific tool with the given query.
+        """
         if tool_name not in self.tools:
             raise ValueError(f"Tool {tool_name} not registered")
         
@@ -69,7 +73,9 @@ class ToolManager:
         return self.tools[tool_name].act(processed_query)
     
     def choose_tool(self, query: str) -> Choice:
-        """Choose the appropriate tool based on the query prefix."""
+        """
+        Choose the appropriate tool based on the query prefix.
+        """
         if query.startswith("/people"):
             return Choice(
                 name=ToolName.WIKIPEDIA, 

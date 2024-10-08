@@ -3,15 +3,15 @@ from src.tools.serp import search as google_search
 from src.tools.wiki import search as wiki_search
 from src.config.logging import logger
 from src.config.setup import config
-from pydantic import BaseModel
-from typing import Callable
-from pydantic import Field 
-from typing import Union 
-from typing import Dict 
-from enum import Enum
-from enum import auto 
+from pydantic import BaseModel, Field
+from typing import Callable, Union, Dict
+from enum import Enum, auto
 
-class ToolName(Enum):
+
+Observation = Union[str, Exception]
+
+
+class Name(Enum):
     """
     Enumeration of available tools.
     """
@@ -26,25 +26,27 @@ class Choice(BaseModel):
     """
     Represents a tool choice with a reason.
     """
-    name: ToolName
-    reason: str
+    name: Name = Field(..., description="The name of the tool chosen.")
+    reason: str = Field(..., description="The reason for choosing this tool.")
 
 
 class Message(BaseModel):
-    role: str
-    content: str
+    """
+    Represents a message exchanged within the agent.
+    """
+    role: str = Field(..., description="The role of the message sender.")
+    content: str = Field(..., description="The content of the message.")
 
 
 class Tool:
     """
     Represents a tool with its execution function.
     """
-    
-    def __init__(self, name: ToolName, func: Callable[[str], ToolResult]):
+    def __init__(self, name: Name, func: Callable[[str]]):
         self.name = name
         self.func = func
-    
-    def act(self, query: str) -> ToolResult:
+
+    def use(self, query: str) -> Observation:
         """
         Execute the tool's function and handle exceptions.
         """
@@ -56,47 +58,72 @@ class Tool:
 
 
 class Agent:
+    """
+    An agent that manages tools and processes queries.
+    """
     def __init__(self, model: GenerativeModel) -> None:
         self.model = model
-        self.tools = None 
-        self.messages = None 
+        self.tools: Dict[Name, Tool] = {}
+        self.messages: list[Message] = []
 
-    def register_tool():
-        pass
+    def register_tool(self, name: Name, func: Callable[[str]]) -> None:
+        """
+        Register a new tool.
+        """
+        self.tools[name] = Tool(name, func)
 
-    def append_message():
-        pass
+    def append_message(self, role: str, content: str) -> None:
+        """
+        Append a new message to the message history.
+        """
+        self.messages.append(Message(role=role, content=content))
 
-    def think():
-        pass
+    def think(self, query: str) -> Choice:
+        """
+        Decide which tool to use based on the query.
+        """
+        # Simplified example decision logic
+        if "who" in query:
+            choice = Choice(name=Name.WIKIPEDIA, reason="Query is informational.")
+        else:
+            choice = Choice(name=Name.GOOGLE, reason="General search is needed.")
+        return choice
 
-    def choose():
-        pass
+    def act(self, query: str) -> Observation:
+        """
+        Execute the chosen tool based on the query.
+        """
+        choice = self.think(query)
+        tool = self.tools.get(choice.name)
+        if tool:
+            return tool.act(query)
+        logger.error(f"No tool registered for choice: {choice.name}")
+        return Exception("Tool not found")
 
-    def act():
-        pass
+    def execute(self, query: str) -> str:
+        """
+        Process the query end-to-end by choosing, acting, and observing results.
+        """
+        self.append_message(role="user", content=query)
+        result = self.act(query)
+        response = str(result) if isinstance(result, str) else "An error occurred."
+        self.append_message(role="agent", content=response)
+        return response
 
-    def observe():
-        pass 
-
-    def execute():
-        pass
 
 def run(query: str) -> str:
     gemini = GenerativeModel(config.GEMINI_MODEL_NAME)
 
-    # create and setup ReAct agent 
+    # Create and set up ReAct agent
     agent = Agent(model=gemini)
-    agent.register_tool()
-    agent.register_tool()
+    agent.register_tool(Name.WIKIPEDIA, wiki_search)
+    agent.register_tool(Name.GOOGLE, google_search)
 
-    ans = agent.execute(query)
-    return ans 
-
-
+    answer = agent.execute(query)
+    return answer
 
 
 if __name__ == "__main__":
-    query = 'who is sachin tendulkar and what is his connection to tennis?'
-    ans = run(query) 
-    logger.info(ans)
+    query = 'Who is Sachin Tendulkar and what is his connection to tennis?'
+    answer = run(query)
+    logger.info(answer)
