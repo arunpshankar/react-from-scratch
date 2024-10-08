@@ -4,8 +4,11 @@ from src.tools.wiki import search as wiki_search
 from src.config.logging import logger
 from src.config.setup import config
 from pydantic import BaseModel
-from typing import Callable, Union, Dict
-from enum import Enum, auto
+from typing import Callable
+from typing import Union 
+from typing import Dict 
+from enum import Enum
+from enum import auto 
 
 
 ToolResult = Union[str, Exception]
