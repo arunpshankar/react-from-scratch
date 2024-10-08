@@ -35,7 +35,7 @@ class Tool:
     """
     Represents a tool with its execution function.
     """
-    def __init__(self, name: Name, func: Callable[[str], Observation]):
+    def __init__(self, name: Name, func: Callable[[str], str]):
         self.name = name
         self.func = func
     
@@ -55,7 +55,7 @@ class Manager:
     def __init__(self) -> None:
         self.tools: Dict[Name, Tool] = {}  # Initialize directly without Field
     
-    def register(self, name: Name, func: Callable[[str], Observation]) -> None:
+    def register(self, name: Name, func: Callable[[str], str]) -> None:
         """
         Register a new tool.
         """
