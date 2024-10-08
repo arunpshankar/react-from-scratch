@@ -9,9 +9,8 @@ from enum import Enum
 from enum import auto 
 
 
-ToolResult = Union[str, Exception]
-
-class ToolName(Enum):
+Observation = Union[str, Exception]
+class Name(Enum):
     """
     Enumeration of available tools.
     """
@@ -26,7 +25,7 @@ class Choice(BaseModel):
     """
     Represents a tool choice with a reason.
     """
-    name: ToolName
+    name: Name
     reason: str
 
 
@@ -35,11 +34,11 @@ class Tool:
     Represents a tool with its execution function.
     """
     
-    def __init__(self, name: ToolName, func: Callable[[str], ToolResult]):
+    def __init__(self, name: Name, func: Callable[[str]]):
         self.name = name
         self.func = func
     
-    def act(self, query: str) -> ToolResult:
+    def use(self, query: str) -> Observation:
         """Execute the tool's function and handle exceptions."""
         try:
             return self.func(query)
@@ -54,23 +53,23 @@ class ToolManager:
     """
     
     def __init__(self) -> None:
-        self.tools: Dict[ToolName, Tool] = {}
+        self.tools: Dict[Name, Tool] = {}
     
-    def register_tool(self, name: ToolName, func: Callable[[str], ToolResult]) -> None:
+    def register_tool(self, name: Name, func: Callable[[str]]) -> None:
         """
         Register a new tool.
         """
         self.tools[name] = Tool(name, func)
     
-    def execute_tool(self, tool_name: ToolName, query: str) -> ToolResult:
+    def execute_tool(self, name: Name, query: str) -> Observation:
         """
         Execute a specific tool with the given query.
         """
-        if tool_name not in self.tools:
-            raise ValueError(f"Tool {tool_name} not registered")
+        if name not in self.tools:
+            raise ValueError(f"Tool {name} not registered")
         
         processed_query = query.split(' ', 1)[1] if ' ' in query else query
-        return self.tools[tool_name].act(processed_query)
+        return self.tools[name].act(processed_query)
     
     def choose_tool(self, query: str) -> Choice:
         """
@@ -78,12 +77,12 @@ class ToolManager:
         """
         if query.startswith("/people"):
             return Choice(
-                name=ToolName.WIKIPEDIA, 
+                name=Name.WIKIPEDIA, 
                 reason="Query starts with /people, using Wikipedia for biographical information."
             )
         elif query.startswith("/location"):
             return Choice(
-                name=ToolName.GOOGLE, 
+                name=Name.GOOGLE, 
                 reason="Query starts with /location, using Google for location-specific information."
             )
         else:
@@ -96,8 +95,8 @@ def run() -> None:
     """
     tool_manager = ToolManager()
     
-    tool_manager.register_tool(ToolName.WIKIPEDIA, wiki_search)
-    tool_manager.register_tool(ToolName.GOOGLE, google_search)
+    tool_manager.register_tool(Name.WIKIPEDIA, wiki_search)
+    tool_manager.register_tool(Name.GOOGLE, google_search)
     
     test_cases = [
         "/people kamala harris",
