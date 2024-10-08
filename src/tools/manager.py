@@ -1,8 +1,6 @@
-from vertexai.generative_models import GenerativeModel
 from src.tools.serp import search as google_search
 from src.tools.wiki import search as wiki_search
 from src.config.logging import logger
-from src.config.setup import config
 from pydantic import BaseModel
 from typing import Callable
 from typing import Union 
@@ -57,7 +55,6 @@ class ToolManager:
     
     def __init__(self) -> None:
         self.tools: Dict[ToolName, Tool] = {}
-        self.model = GenerativeModel(config.GEMINI_MODEL_NAME)
     
     def register_tool(self, name: ToolName, func: Callable[[str], ToolResult]) -> None:
         """Register a new tool."""
