@@ -46,8 +46,6 @@ class Agent:
         self.tools: Dict[ToolName, Tool] = {}
         self.messages: List[Message] = []
         self.request: str = ""
-        self.token_count: int = 0
-        self.token_limit: int = 5000
 
     def add_tool(self, tool: Tool) -> None:
         self.tools[tool.name] = tool

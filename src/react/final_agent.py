@@ -70,13 +70,13 @@ class Agent:
         self.tools: Dict[Name, Tool] = {}
         self.messages: List[Message] = []
 
-    def register_tool(self, name: Name, func: Callable[[str], str]) -> None:
+    def register(self, name: Name, func: Callable[[str], str]) -> None:
         """
         Register a new tool.
         """
         self.tools[name] = Tool(name, func)
 
-    def append_message(self, role: str, content: str) -> None:
+    def append(self, role: str, content: str) -> None:
         """
         Append a new message to the message history.
         """
@@ -108,10 +108,10 @@ class Agent:
         """
         Process the query end-to-end by choosing, acting, and observing results.
         """
-        self.append_message(role="user", content=query)
+        self.append(role="user", content=query)
         result = self.act(query)
         response = str(result) if isinstance(result, str) else "An error occurred."
-        self.append_message(role="agent", content=response)
+        self.append(role="agent", content=response)
         return response
 
 
@@ -120,8 +120,8 @@ def run(query: str) -> str:
 
     # Create and set up ReAct agent
     agent = Agent(model=gemini)
-    agent.register_tool(Name.WIKIPEDIA, wiki_search)
-    agent.register_tool(Name.GOOGLE, google_search)
+    agent.register(Name.WIKIPEDIA, wiki_search)
+    agent.register(Name.GOOGLE, google_search)
 
     answer = agent.execute(query)
     return answer
