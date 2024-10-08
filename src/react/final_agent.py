@@ -3,13 +3,17 @@ from src.tools.serp import search as google_search
 from src.tools.wiki import search as wiki_search
 from src.config.logging import logger
 from src.config.setup import config
-from pydantic import BaseModel, Field
-from typing import Callable, Union, Dict
-from enum import Enum, auto
+from pydantic import BaseModel
+from typing import Callable
+from pydantic import Field 
+from typing import Union
+from typing import Dict 
+from typing import List 
+from enum import Enum
+from enum import auto 
 
 
 Observation = Union[str, Exception]
-
 
 class Name(Enum):
     """
@@ -64,7 +68,7 @@ class Agent:
     def __init__(self, model: GenerativeModel) -> None:
         self.model = model
         self.tools: Dict[Name, Tool] = {}
-        self.messages: list[Message] = []
+        self.messages: List[Message] = []
 
     def register_tool(self, name: Name, func: Callable[[str], str]) -> None:
         """
