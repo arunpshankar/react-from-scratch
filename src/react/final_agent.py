@@ -42,7 +42,7 @@ class Tool:
     """
     Represents a tool with its execution function.
     """
-    def __init__(self, name: Name, func: Callable[[str]]):
+    def __init__(self, name: Name, func: Callable[[str], str]):
         self.name = name
         self.func = func
 
@@ -66,7 +66,7 @@ class Agent:
         self.tools: Dict[Name, Tool] = {}
         self.messages: list[Message] = []
 
-    def register_tool(self, name: Name, func: Callable[[str]]) -> None:
+    def register_tool(self, name: Name, func: Callable[[str], str]) -> None:
         """
         Register a new tool.
         """
@@ -96,7 +96,7 @@ class Agent:
         choice = self.think(query)
         tool = self.tools.get(choice.name)
         if tool:
-            return tool.act(query)
+            return tool.use(query)
         logger.error(f"No tool registered for choice: {choice.name}")
         return Exception("Tool not found")
 
