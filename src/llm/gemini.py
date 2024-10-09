@@ -28,7 +28,9 @@ def _create_generation_config() -> GenerationConfig:
 
 
 def _create_safety_settings() -> Dict[HarmCategory, HarmBlockThreshold]:
-    """Creates safety settings for content generation."""
+    """
+    Creates safety settings for content generation.
+    """
     try:
         safety_settings = {
             HarmCategory.HARM_CATEGORY_UNSPECIFIED: HarmBlockThreshold.BLOCK_NONE,
