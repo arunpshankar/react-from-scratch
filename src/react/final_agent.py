@@ -76,27 +76,43 @@ class Agent:
             self.trace("assistant", "I'm sorry, but I couldn't find a satisfactory answer within the allowed number of iterations. Here's what I know so far: " + self.get_history())
             return
 
-        prompt = f"""You are a ReAct agent. Answer the following query as best you can: {self.query}.
-                    Previous context:
-                    {self.get_history()}
-                    First, think about what to do. What action to take first, if any.
-                    Available tools: {', '.join([str(tool.name) for tool in self.tools.values()])}
-                    
-                    Respond in the following JSON format:
-                    {{
-                        "thought": "Your reasoning about what to do next",
-                        "action": {{
-                            "name": "The name of the tool to use (wikipedia, google, or none)",
-                            "reason": "Why you chose this tool or why you chose none"
-                        }}
-                    }}
-                    
-                    If you have enough information to answer the query, respond with:
-                    {{
-                        "thought": "Your final reasoning",
-                        "answer": "Your final answer to the query"
-                    }}
-                    """
+        prompt = f"""You are a ReAct (Reasoning and Acting) agent tasked with answering the following query:
+
+Query: {self.query}
+
+Your goal is to reason about the query and decide on the best course of action to answer it accurately.
+
+Previous reasoning steps:
+{self.get_history()}
+
+Available tools:
+{', '.join([str(tool.name) for tool in self.tools.values()])}
+
+Instructions:
+1. Analyze the query and previous reasoning steps.
+2. Decide on the next action: use a tool or provide a final answer.
+3. Respond in the following JSON format:
+
+If you need to use a tool:
+{{
+    "thought": "Your detailed reasoning about what to do next",
+    "action": {{
+        "name": "Tool name (wikipedia, google, or none)",
+        "reason": "Explanation of why you chose this tool"
+    }}
+}}
+
+If you have enough information to answer the query:
+{{
+    "thought": "Your final reasoning process",
+    "answer": "Your comprehensive answer to the query"
+}}
+
+Remember:
+- Be thorough in your reasoning.
+- Use tools when you need more information.
+- Provide a final answer only when you're confident you have sufficient information.
+"""
 
         self.trace("system", prompt)
         response = self.ask_gemini(prompt)
