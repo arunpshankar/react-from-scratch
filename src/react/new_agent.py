@@ -131,7 +131,8 @@ class Agent:
             role (str): The role of the message sender.
             content (str): The content of the message.
         """
-        self.messages.append(Message(role=role, content=content))
+        if role == "assistant":
+            self.messages.append(Message(role=role, content=content))
         self.write_to_file(f"{role}: {content}\n")
 
     def write_to_file(self, content: str) -> None:
@@ -146,9 +147,12 @@ class Agent:
         Retrieves the conversation history.
 
         Returns:
-            str: Formatted history of messages.
+            str: Formatted history of assistant's messages.
         """
-        return "\n".join([f"{message.role}: {message.content}" for message in self.messages])
+        return "\n".join([
+            f"{message.content}" for message in self.messages
+            if message.role == "assistant"
+        ])
 
     def think(self) -> None:
         """
@@ -163,8 +167,9 @@ class Agent:
             self.trace("assistant", "I'm sorry, but I couldn't find a satisfactory answer within the allowed number of iterations. Here's what I know so far: " + self.get_history())
             return
 
-        prompt = self.prompt_template.format(query=self.query, 
-                                             history=self.get_history(),
+        prompt = self.prompt_template.format(
+            query=self.query,
+            history=self.get_history(),
             tools=', '.join([str(tool.name) for tool in self.tools.values()])
         )
 
