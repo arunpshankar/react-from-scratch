@@ -98,7 +98,7 @@ class Agent:
         self.tools: Dict[Name, Tool] = {}
         self.messages: List[Message] = []
         self.query = ""
-        self.max_iterations = 5
+        self.max_iterations = 30
         self.current_iteration = 0
         self.output_file = f"./data/output/trace.txt"
         self.prompt_template = self.load_prompt_template()
@@ -281,7 +281,7 @@ def run(query: str) -> str:
 
 
 if __name__ == "__main__":
-    query = "Who is older, Cristiano Ronaldo or Lionel Messi?"
+    query = "What is the most common ingredient in the national dishes of the top 5 countries by GDP?"
     final_answer = run(query)
     logger.info(final_answer)
     
