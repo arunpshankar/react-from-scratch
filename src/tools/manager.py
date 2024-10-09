@@ -40,7 +40,9 @@ class Tool:
         self.func = func
     
     def use(self, query: str) -> Observation:
-        """Execute the tool's function for a given query and handle exceptions."""
+        """
+        Execute the tool's function for a given query and handle exceptions.
+        """
         try:
             return self.func(query)
         except Exception as e:
@@ -53,7 +55,7 @@ class Manager:
     Manages tool registration, selection, and execution.
     """
     def __init__(self) -> None:
-        self.tools: Dict[Name, Tool] = {}  # Initialize directly without Field
+        self.tools: Dict[Name, Tool] = {} 
     
     def register(self, name: Name, func: Callable[[str], str]) -> None:
         """
