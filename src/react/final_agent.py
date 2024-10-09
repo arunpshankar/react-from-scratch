@@ -1,20 +1,14 @@
-from vertexai.generative_models import GenerativeModel
+import json
+from datetime import datetime
+from vertexai.generative_models import GenerativeModel, Part
 from src.tools.serp import search as google_search
 from src.tools.wiki import search as wiki_search
-from vertexai.generative_models import Part 
 from src.config.logging import logger
 from src.config.setup import config
 from src.llm.gemini import generate
-from pydantic import BaseModel
-from typing import Callable
-from pydantic import Field 
-from typing import Union
-from typing import Dict 
-from typing import List 
-from enum import Enum
-from enum import auto 
-import json 
-
+from pydantic import BaseModel, Field
+from typing import Callable, Union, Dict, List
+from enum import Enum, auto
 
 Observation = Union[str, Exception]
 
@@ -56,18 +50,27 @@ class Agent:
         self.query = ""
         self.max_iterations = 5
         self.current_iteration = 0
+        self.output_file = f"react_output_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
 
     def register(self, name: Name, func: Callable[[str], str]) -> None:
         self.tools[name] = Tool(name, func)
 
     def trace(self, role: str, content: str) -> None:
         self.messages.append(Message(role=role, content=content))
+        self.write_to_file(f"{role}: {content}\n")
+
+    def write_to_file(self, content: str) -> None:
+        with open(self.output_file, 'a', encoding='utf-8') as f:
+            f.write(content)
 
     def get_history(self) -> str:
         return "\n".join([f"{message.role}: {message.content}" for message in self.messages])
 
     def think(self) -> None:
         self.current_iteration += 1
+        logger.info(f"Starting iteration {self.current_iteration}")
+        self.write_to_file(f"\n{'='*50}\nIteration {self.current_iteration}\n{'='*50}\n")
+
         if self.current_iteration > self.max_iterations:
             logger.warning("Reached maximum iterations. Stopping.")
             self.trace("assistant", "I'm sorry, but I couldn't find a satisfactory answer within the allowed number of iterations. Here's what I know so far: " + self.get_history())
@@ -160,9 +163,10 @@ def run(query: str) -> str:
     agent.register(Name.GOOGLE, google_search)
 
     answer = agent.execute(query)
+    logger.info(f"Final answer: {answer}")
     return answer
 
 if __name__ == "__main__":
-    query = 'Who is Sachin Tendulkar and what is his connection to tennis?'
+    query = 'when was frisco, tx founded?'
     answer = run(query)
     logger.info(answer)
