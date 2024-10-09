@@ -153,6 +153,6 @@ def search(search_query: str, location: str = "") -> str:
 
 
 if __name__ == "__main__":
-    search_query = "greek restaurants in miami fl"
+    search_query = "Best gyros in Barcelona, Spain"
     result_json = search(search_query, '')
     print(result_json)

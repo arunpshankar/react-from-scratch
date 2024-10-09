@@ -41,7 +41,7 @@ def search(query: str) -> Optional[str]:
 
 
 if __name__ == '__main__':
-    queries = ['Sachin Tendulkar', 'Albert Einstein']
+    queries = ["Geoffrey Hinton", "Demis Hassabis"]
 
     for query in queries:
         result = search(query)
