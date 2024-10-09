@@ -1,217 +1,188 @@
-from vertexai.generative_models import GenerativeModel
+import json
+from datetime import datetime
+from vertexai.generative_models import GenerativeModel, Part
 from src.tools.serp import search as google_search
 from src.tools.wiki import search as wiki_search
-from vertexai.generative_models import Part 
 from src.config.logging import logger
-from src.llm.gemini import generate
 from src.config.setup import config
-from dataclasses import dataclass
-from typing import Callable
-from typing import List 
-from typing import Dict 
-import re
+from src.llm.gemini import generate
+from pydantic import BaseModel, Field
+from typing import Callable, Union, Dict, List
+from enum import Enum, auto
 
+Observation = Union[str, Exception]
 
-@dataclass
+model = GenerativeModel(config.GEMINI_MODEL_NAME)
+
+class Name(Enum):
+    WIKIPEDIA = auto()
+    GOOGLE = auto()
+    NONE = auto()
+
+    def __str__(self) -> str:
+        return self.name.lower()
+
+class Choice(BaseModel):
+    name: Name = Field(..., description="The name of the tool chosen.")
+    reason: str = Field(..., description="The reason for choosing this tool.")
+
+class Message(BaseModel):
+    role: str = Field(..., description="The role of the message sender.")
+    content: str = Field(..., description="The content of the message.")
+
 class Tool:
-    """
-    Represents a tool that can be used by the ReAct agent.
-    """
-    name: str
-    function: Callable[[str], str]
-    description: str
+    def __init__(self, name: Name, func: Callable[[str], str]):
+        self.name = name
+        self.func = func
 
-    def act(self, input_data: str) -> str:
-        """
-        Execute the tool's function with the given input.
-
-        Args:
-            input_data (str): The input data for the tool.
-
-        Returns:
-            str: The result of the tool's execution.
-
-        Raises:
-            Exception: If there's an error during tool execution.
-        """
+    def use(self, query: str) -> Observation:
         try:
-            result = self.function(input_data)
-            logger.info(f"Tool '{self.name}' executed successfully.")
-            return result
+            return self.func(query)
         except Exception as e:
-            logger.error(f"Error executing tool '{self.name}': {e}")
-            raise
+            logger.error(f"Error executing tool {self.name}: {e}")
+            return str(e)
 
-class ReActAgent:
-    """
-    A ReAct (Reason+Act) agent that uses tools to answer questions.
-
-    This module implements a ReAct agent that uses Wikipedia and Google Search
-    as tools to answer questions. The agent follows a loop of Thought, Action, and Observation
-    to generate responses to user queries.
-
-    The agent prioritizes Wikipedia searches and falls back to Google Search when necessary.
-    It can also combine information from both sources to provide comprehensive answers.
-    """
-
-    def __init__(self, model: GenerativeModel):
-        """
-        Initialize the ReActAgent.
-
-        Args:
-            model (GenerativeModel): The generative model to use for reasoning.
-        """
+class Agent:
+    def __init__(self, model: GenerativeModel) -> None:
         self.model = model
-        self.tools: Dict[str, Tool] = {}
-        self.messages: List[Dict[str, str]] = []
-        self._initialize_system_prompt()
+        self.tools: Dict[Name, Tool] = {}
+        self.messages: List[Message] = []
+        self.query = ""
+        self.max_iterations = 5
+        self.current_iteration = 0
+        self.output_file = f"react_output_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
 
-    def _initialize_system_prompt(self):
-        """
-        Initialize the system prompt for the agent.
-        """
-        prompt = """
-        You are an AI assistant that follows a loop of Thought, Action, PAUSE, and Observation to answer questions.
-        At the end of the loop, you output an Answer.
+    def register(self, name: Name, func: Callable[[str], str]) -> None:
+        self.tools[name] = Tool(name, func)
 
-        Use Thought to describe your reasoning about the question.
-        Use Action to run one of the available tools, then return PAUSE.
-        Observation will be the result of running those actions.
+    def trace(self, role: str, content: str) -> None:
+        self.messages.append(Message(role=role, content=content))
+        self.write_to_file(f"{role}: {content}\n")
 
-        Your available actions are:
+    def write_to_file(self, content: str) -> None:
+        with open(self.output_file, 'a', encoding='utf-8') as f:
+            f.write(content)
 
-        wikipedia:
-        e.g. wikipedia: Django
-        Returns a summary from searching Wikipedia
+    def get_history(self) -> str:
+        return "\n".join([f"{message.role}: {message.content}" for message in self.messages])
 
-        google_search:
-        e.g. google_search: Django web framework
-        Performs a Google search and returns relevant information
+    def think(self) -> None:
+        self.current_iteration += 1
+        logger.info(f"Starting iteration {self.current_iteration}")
+        self.write_to_file(f"\n{'='*50}\nIteration {self.current_iteration}\n{'='*50}\n")
 
-        Follow these guidelines:
-        1. Always start with a Wikipedia search for factual queries.
-        2. If Wikipedia doesn't provide a complete answer, use Google Search for additional information.
-        3. If you find partial information on Wikipedia, use both Wikipedia and Google Search to complete the answer.
-        4. If Wikipedia doesn't have relevant information, rely on Google Search.
-        5. Combine information from both sources when necessary to provide comprehensive answers.
+        if self.current_iteration > self.max_iterations:
+            logger.warning("Reached maximum iterations. Stopping.")
+            self.trace("assistant", "I'm sorry, but I couldn't find a satisfactory answer within the allowed number of iterations. Here's what I know so far: " + self.get_history())
+            return
 
-        Example session:
+        prompt = f"""You are a ReAct (Reasoning and Acting) agent tasked with answering the following query:
 
-        Human: What is the capital of France, and what's a famous landmark there?
-        Thought: I should start by looking up France on Wikipedia to find its capital and possibly a famous landmark.
-        Action: wikipedia: France
-        PAUSE
+Query: {self.query}
 
-        Observation: France is a country in Western Europe. The capital and largest city is Paris. Paris is known for many landmarks, including the Eiffel Tower.
+Your goal is to reason about the query and decide on the best course of action to answer it accurately.
 
-        Thought: I've found the capital of France (Paris) and a famous landmark (Eiffel Tower) from Wikipedia. To provide more detailed information about the Eiffel Tower, I'll use Google Search.
-        Action: google_search: Eiffel Tower famous landmark Paris
-        PAUSE
+Previous reasoning steps:
+{self.get_history()}
 
-        Observation: The Eiffel Tower is a wrought-iron lattice tower on the Champ de Mars in Paris, France. It is named after the engineer Gustave Eiffel, whose company designed and built the tower. Constructed from 1887 to 1889 as the entrance arch to the 1889 World's Fair, it was initially criticized by some of France's leading artists and intellectuals for its design, but it has become a global cultural icon of France and one of the most recognizable structures in the world.
+Available tools:
+{', '.join([str(tool.name) for tool in self.tools.values()])}
 
-        Answer: The capital of France is Paris. A famous landmark in Paris is the Eiffel Tower. The Eiffel Tower is a wrought-iron lattice tower located on the Champ de Mars. It was constructed between 1887 and 1889 as the entrance arch to the 1889 World's Fair. Despite initial criticism, it has become a global cultural icon of France and one of the most recognizable structures worldwide. The tower is named after Gustave Eiffel, whose company designed and built it.
-        """
-        self.messages.append({"role": "system", "content": prompt})
+Instructions:
+1. Analyze the query and previous reasoning steps.
+2. Decide on the next action: use a tool or provide a final answer.
+3. Respond in the following JSON format:
 
-    def add_tool(self, tool: Tool) -> None:
-        """
-        Add a tool to the agent's toolset.
+If you need to use a tool:
+{{
+    "thought": "Your detailed reasoning about what to do next",
+    "action": {{
+        "name": "Tool name (wikipedia, google, or none)",
+        "reason": "Explanation of why you chose this tool"
+    }}
+}}
 
-        Args:
-            tool (Tool): The tool to add.
-        """
-        self.tools[tool.name] = tool
-        logger.info(f"Tool '{tool.name}' added to the agent.")
+If you have enough information to answer the query:
+{{
+    "thought": "Your final reasoning process",
+    "answer": "Your comprehensive answer to the query"
+}}
 
-    def execute(self, question: str, max_turns: int = 3) -> str:
-        """
-        execute a query using the ReAct agent.
+Remember:
+- Be thorough in your reasoning.
+- Use tools when you need more information.
+- Provide a final answer only when you're confident you have sufficient information.
+"""
 
-        Args:
-            question (str): The question to be answered.
-            max_turns (int, optional): Maximum number of turns for the agent. Defaults to 5.
+        self.trace("system", prompt)
+        response = self.ask_gemini(prompt)
+        logger.info(f"Thought: {response}")
+        self.trace("assistant", response)
+        self.process_response(response)
 
-        Returns:
-            str: The final answer generated by the agent.
-
-        Raises:
-            Exception: If there's an error during query processing.
-        """
-        self.messages.append({"role": "user", "content": question})
-        
-        for _ in range(max_turns):
-            try:
-                response = self._generate_response()
-                logger.info(f"Agent response: {response}")
-
-                if response.lower().startswith("answer:"):
-                    return response
-
-                action_match = re.search(r'^Action: (\w+): (.*)$', response, re.MULTILINE)
-                if action_match:
-                    action, action_input = action_match.groups()
-                    if action not in self.tools:
-                        raise ValueError(f"Unknown action: {action}")
-                    
-                    observation = self.tools[action].act(action_input)
-                    logger.info(f"Observation: {observation}")
-                    self.messages.append({"role": "system", "content": f"Observation: {observation}"})
-                else:
-                    logger.warning("No action found in the response.")
-            except Exception as e:
-                logger.error(f"Error during query processing: {e}")
-                return f"An error occurred while processing your query: {str(e)}"
-
-        return "I apologize, but I couldn't find a definitive answer within the allowed number of turns."
-
-    def _generate_response(self) -> str:
-        """
-        Generate a response using the Gemini model.
-
-        Returns:
-            str: The generated response.
-
-        Raises:
-            Exception: If there's an error in generating the response.
-        """
+    def process_response(self, response: str) -> None:
         try:
-            contents = [Part.from_text(message["content"]) for message in self.messages]
-            print('>' * 10)
-            print(contents)
-            print('++' * 10)
-            response = generate(self.model, contents)
-            if response:
-                logger.info("Gemini model executed successfully.")
-                return response
+            cleaned_response = response.strip().strip('`').strip()
+            if cleaned_response.startswith('json'):
+                cleaned_response = cleaned_response[4:].strip()
+            
+            parsed_response = json.loads(cleaned_response)
+            
+            if "action" in parsed_response:
+                action = parsed_response["action"]
+                tool_name = Name[action["name"].upper()]
+                if tool_name == Name.NONE:
+                    logger.info("No action needed. Proceeding to final answer.")
+                    self.think()
+                else:
+                    self.act(tool_name, self.query)
+            elif "answer" in parsed_response:
+                self.trace("assistant", parsed_response["answer"])
             else:
-                raise ValueError("Empty response from Gemini model.")
+                raise ValueError("Invalid response format")
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse response: {response}. Error: {str(e)}")
+            self.trace("assistant", "I encountered an error in processing. Let me try again.")
+            self.think()
         except Exception as e:
-            logger.error(f"Error executing Gemini model: {e}")
-            raise
+            logger.error(f"Error processing response: {str(e)}")
+            self.trace("assistant", "I encountered an unexpected error. Let me try a different approach.")
+            self.think()
 
-def run():
-    """
-    afddadfda
-    """
-    # Initialize the Gemini model
-    gemini_model = GenerativeModel(config.GEMINI_MODEL_NAME)
+    def act(self, tool_name: Name, query: str) -> None:
+        tool = self.tools.get(tool_name)
+        if tool:
+            result = tool.use(query)
+            self.trace("system", f"Observation: {result}")
+            self.think()
+        else:
+            logger.error(f"No tool registered for choice: {tool_name}")
+            self.trace("system", f"Error: Tool {tool_name} not found")
+            self.think()
 
-    # Create and set up the ReActAgent
-    agent = ReActAgent(model=gemini_model)
-    agent.add_tool(Tool(name="wikipedia", function=wiki_search, description="Search Wikipedia for information"))
-    agent.add_tool(Tool(name="google_search", function=google_search, description="Perform a Google search"))
+    def execute(self, query: str) -> str:
+        self.query = query
+        self.trace(role="user", content=query)
+        self.think()
+        return self.messages[-1].content
 
-    # Example queries to demonstrate different scenarios
-    queries = [
-        "What is the capital of Italy, and what's a famous landmark there?"
-    ]
+    def ask_gemini(self, prompt: str) -> str:
+        contents = [Part.from_text(prompt)]
+        response = generate(self.model, contents)
+        return str(response) if response is not None else "No response from Gemini"
 
-    for query in queries:
-        print(f"\nQuery: {query}")
-        response = agent.execute(query)
-        print(f"Final Answer: {response}\n")
-        print("-" * 50)
+def run(query: str) -> str:
+    gemini = GenerativeModel(config.GEMINI_MODEL_NAME)
+
+    agent = Agent(model=gemini)
+    agent.register(Name.WIKIPEDIA, wiki_search)
+    agent.register(Name.GOOGLE, google_search)
+
+    answer = agent.execute(query)
+    logger.info(f"Final answer: {answer}")
+    return answer
 
 if __name__ == "__main__":
-    run()
+    query = 'who is older, kamala or tulsi gabbard'
+    answer = run(query)
+    logger.info(answer)
