@@ -19,30 +19,40 @@ import json
 Observation = Union[str, Exception]
 
 class Name(Enum):
-    """Enumeration for tool names available to the agent."""
+    """
+    Enumeration for tool names available to the agent.
+    """
     WIKIPEDIA = auto()
     GOOGLE = auto()
     NONE = auto()
 
     def __str__(self) -> str:
-        """String representation of the tool name."""
+        """
+        String representation of the tool name.
+        """
         return self.name.lower()
 
 
 class Choice(BaseModel):
-    """Represents a choice of tool with a reason for selection."""
+    """
+    Represents a choice of tool with a reason for selection.
+    """
     name: Name = Field(..., description="The name of the tool chosen.")
     reason: str = Field(..., description="The reason for choosing this tool.")
 
 
 class Message(BaseModel):
-    """Represents a message with sender role and content."""
+    """
+    Represents a message with sender role and content.
+    """
     role: str = Field(..., description="The role of the message sender.")
     content: str = Field(..., description="The content of the message.")
 
 
 class Tool:
-    """A wrapper class for tools used by the agent, executing a function based on tool type."""
+    """
+    A wrapper class for tools used by the agent, executing a function based on tool type.
+    """
 
     def __init__(self, name: Name, func: Callable[[str], str]):
         """
@@ -73,7 +83,9 @@ class Tool:
 
 
 class Agent:
-    """Defines the agent responsible for executing queries and handling tool interactions."""
+    """
+    Defines the agent responsible for executing queries and handling tool interactions.
+    """
 
     def __init__(self, model: GenerativeModel) -> None:
         """
@@ -112,7 +124,9 @@ class Agent:
         self.write_to_file(f"{role}: {content}\n")
 
     def write_to_file(self, content: str) -> None:
-        """Appends content to the output trace file."""
+        """
+        Appends content to the output trace file.
+        """
         with open(self.output_file, 'a', encoding='utf-8') as f:
             f.write(content)
 
@@ -126,7 +140,9 @@ class Agent:
         return "\n".join([f"{message.role}: {message.content}" for message in self.messages])
 
     def think(self) -> None:
-        """Processes the current query, decides actions, and iterates until a solution or max iteration limit is reached."""
+        """
+        Processes the current query, decides actions, and iterates until a solution or max iteration limit is reached.
+        """
         self.current_iteration += 1
         logger.info(f"Starting iteration {self.current_iteration}")
         self.write_to_file(f"\n{'='*50}\nIteration {self.current_iteration}\n{'='*50}\n")
@@ -178,9 +194,9 @@ Remember:
         response = self.ask_gemini(prompt)
         logger.info(f"Thought: {response}")
         self.trace("assistant", response)
-        self.process_response(response)
+        self.decide(response)
 
-    def process_response(self, response: str) -> None:
+    def decide(self, response: str) -> None:
         """
         Processes the agent's response, deciding actions or final answers.
 
