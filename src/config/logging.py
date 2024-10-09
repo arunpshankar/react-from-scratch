@@ -4,7 +4,7 @@ import os
 
 def custom_path_filter(path):
     # Define the project root name
-    project_root = "VAIS-RAG-Patterns"
+    project_root = "react-from-scratch"
     
     # Find the index of the project root in the path
     idx = path.find(project_root)
