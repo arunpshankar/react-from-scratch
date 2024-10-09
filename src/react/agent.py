@@ -1,14 +1,20 @@
-import json
-from datetime import datetime
-from vertexai.generative_models import GenerativeModel, Part
+from vertexai.generative_models import GenerativeModel 
 from src.tools.serp import search as google_search
 from src.tools.wiki import search as wiki_search
+from vertexai.generative_models import Part 
 from src.config.logging import logger
 from src.config.setup import config
 from src.llm.gemini import generate
-from pydantic import BaseModel, Field
-from typing import Callable, Union, Dict, List
-from enum import Enum, auto
+from pydantic import BaseModel
+from typing import Callable
+from pydantic import Field 
+from typing import Union
+from typing import List 
+from typing import Dict 
+from enum import Enum
+from enum import auto
+import json
+
 
 Observation = Union[str, Exception]
 
@@ -22,13 +28,16 @@ class Name(Enum):
     def __str__(self) -> str:
         return self.name.lower()
 
+
 class Choice(BaseModel):
     name: Name = Field(..., description="The name of the tool chosen.")
     reason: str = Field(..., description="The reason for choosing this tool.")
 
+
 class Message(BaseModel):
     role: str = Field(..., description="The role of the message sender.")
     content: str = Field(..., description="The content of the message.")
+
 
 class Tool:
     def __init__(self, name: Name, func: Callable[[str], str]):
@@ -50,7 +59,7 @@ class Agent:
         self.query = ""
         self.max_iterations = 5
         self.current_iteration = 0
-        self.output_file = f"react_output_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+        self.output_file = f"./data/output/trace.txt"
 
     def register(self, name: Name, func: Callable[[str], str]) -> None:
         self.tools[name] = Tool(name, func)
