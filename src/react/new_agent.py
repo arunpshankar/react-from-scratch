@@ -167,9 +167,8 @@ class Agent:
             self.trace("assistant", "I'm sorry, but I couldn't find a satisfactory answer within the allowed number of iterations. Here's what I know so far: " + self.get_history())
             return
 
-        prompt = self.prompt_template.format(
-            query=self.query,
-            history=self.get_history(),
+        prompt = self.prompt_template.format(query=self.query, 
+                                             history=self.get_history(),
             tools=', '.join([str(tool.name) for tool in self.tools.values()])
         )
 

@@ -7,36 +7,90 @@ assistant: Thought: {
  "thought": "The query asks for a comparison of ages between Kamala (likely referring to Kamala Harris) and Tulsi Gabbard. To determine who is older, I need to find their birth dates and compare.",
  "action": {
   "name": "wikipedia",
-  "reason": "Wikipedia is a reliable source for biographical information, including birth dates. I will search for each person individually to find their birth dates.",
-  "input": "Kamala Harris"
+  "reason": "Wikipedia is a reliable source for biographical information, including birth dates. I will search for each person on Wikipedia to find their birth dates.",
+  "input": "Kamala Harris; Tulsi Gabbard"
  }
 }
 
 assistant: Action: Using wikipedia tool
-system: Observation from wikipedia: {
-  "query": "Kamala Harris",
-  "title": "Kamala Harris",
-  "summary": "Kamala Devi Harris (born October 20, 1964) is an American politician and attorney who has been the 49th and current vice president of the United States since 2021, serving under President Joe Biden. She is the first woman, the first African American, and the first Asian American to be vice president. She is the highest-ranking female official in U.S. history. Harris is the Democratic Party's nominee for president in the 2024 election. From 2017 to 2021, she represented California in the United States Senate. Before that, she was the attorney general of California.\nBorn in Oakland, California, Harris graduated from Howard University and the University of California's Hastings College of the Law. She began her law career in the office of the district attorney of Alameda County. She was recruited to the San Francisco District Attorney's Office and later to the office of the city attorney of San Francisco. She was elected district attorney of San Francisco in 2003 and attorney general of California in 2010, and reelected as attorney general in 2014. As the San Francisco district attorney and the attorney general of California, Harris was the first woman, the first African American, and the first Asian American to hold each office.\nHarris was the junior U.S. senator from California from 2017 to 2021. She won the 2016 Senate election, becoming the second Black woman and first South Asian American U.S. senator. As a senator, Harris advocated for stricter gun control laws, the DREAM Act, federal legalization of cannabis, and reforms to healthcare and taxation. She gained a national profile for her pointed questioning of Trump administration officials during Senate hearings, including Trump's second Supreme Court nominee, Brett Kavanaugh.\nHarris sought the 2020 Democratic presidential nomination in 2019, but withdrew from the race before the primaries. Biden selected her as his running mate, and their ticket defeated the incumbent president and vice president, Donald Trump and Mike Pence, in the 2020 election. Presiding over an evenly split Senate upon entering office, Harris played a crucial role as president of the Senate. She cast more tie-breaking votes than any other vice president, which helped pass bills such as the American Rescue Plan Act of 2021 stimulus package and the Inflation Reduction Act of 2022. After Biden withdrew from the 2024 presidential election, Harris launched her campaign with Biden's endorsement. On August 6, 2024, she chose Tim Walz, the governor of Minnesota, as her running mate."
-}
+system: Observation from wikipedia: None
 
 ==================================================
 Iteration 2
 ==================================================
-assistant: Thought: ```json
-{
- "thought": "I now have Kamala Harris' birth date from Wikipedia (October 20, 1964). To compare her age to Tulsi Gabbard's, I need to find Tulsi Gabbard's birth date. I will use Wikipedia again as it's a reliable source for this information.",
+assistant: Thought: {
+ "thought": "The Wikipedia tool did not return any observations, which means it likely failed to find the necessary information. To ensure I get the birth dates, I will use the Google search engine which might have a more robust way of finding this information.",
  "action": {
-  "name": "wikipedia",
-  "reason": "Wikipedia is a reliable source for biographical information, including birth dates. I will search for Tulsi Gabbard to find her birth date.",
-  "input": "Tulsi Gabbard"
+  "name": "google",
+  "reason": "Google is a more general search engine and can access a wider range of information. It might be more successful in finding the birth dates of Kamala Harris and Tulsi Gabbard.",
+  "input": "Kamala Harris birth date; Tulsi Gabbard birth date"
  }
 }
-```
-assistant: Action: Using wikipedia tool
-system: Observation from wikipedia: {
-  "query": "Tulsi Gabbard",
-  "title": "Tulsi Gabbard",
-  "summary": "Tulsi Gabbard ( TUL-see GAB-ərd; born April 12, 1981) is an American politician, United States Army Reserve officer, and conservative political commentator who served as U.S. Representative for Hawaii's 2nd congressional district from 2013 to 2021. She became the first Samoan-American voting member of Congress. A then-member of the Democratic Party, she was  a candidate for its nomination in the 2020 United States presidential election; she left the party in October 2022 to become an independent politician.\nIn 2002, Gabbard was elected to the Hawaii House of Representatives at the age of 21. Gabbard served in a field medical unit of the Hawaii Army National Guard while deployed to Iraq from 2004 to 2005 and was stationed in Kuwait from 2008 to 2009 as an Army Military Police platoon leader. While a member of Congress, she served as vice chair of the Democratic National Committee (DNC) from 2013 to 2016, and resigned to endorse Bernie Sanders' campaign for the 2016 Democratic presidential nomination.\nDuring her time in Congress, she frequently appeared on Fox News and criticized the Barack Obama administration for refusing to say that the real enemy of the United States is radical Islam or Islamic extremism. During her presidential campaign, she highlighted an opposition to military interventionism, although she has contradicted that and called herself a \"hawk\" on combatting terrorism. Her decision to meet Syrian President Bashar al-Assad and her skepticism of claims that he had used chemical weapons gave rise to public disagreement with mainstream Democrats. In March 2020, Gabbard ended her presidential candidacy, and endorsed Joe Biden over her former ally Bernie Sanders.\nSince leaving the House of Representatives on January 3, 2021, Gabbard has taken more conservative positions on issues such as abortion, foreign policy, transgender rights, and border security. She has continued her frequent presence on Fox News, including serving as a fill-in host for Tucker Carlson Tonight. In October 2022, Gabbard announced that she had left the Democratic Party altogether, citing their positions on foreign policy and social issues as reasons for her departure. Gabbard campaigned for several Republican candidates in the 2022 midterm elections. She was also a featured speaker at the 2022 and 2024 Conservative Political Action Conferences (CPAC). In 2024, Gabbard endorsed former President Donald Trump for the 2024 United States presidential election."
+
+assistant: Action: Using google tool
+system: Observation from google: {
+  "top_results": [
+    {
+      "position": 1,
+      "title": "Kamala Harris",
+      "link": "https://en.wikipedia.org/wiki/Kamala_Harris",
+      "snippet": "Kamala Devi Harris (born October 20, 1964) is an American politician and attorney who has been the 49th and current vice president of the United States ..."
+    },
+    {
+      "position": 2,
+      "title": "Tulsi Gabbard",
+      "link": "https://en.wikipedia.org/wiki/Tulsi_Gabbard",
+      "snippet": "Tulsi Gabbard is an American politician, United States Army Reserve officer, and conservative political commentator who served as U.S. Representative for ..."
+    },
+    {
+      "position": 3,
+      "title": "Tulsi Gabbard | Archives of Women's Political Communication",
+      "link": "https://awpc.cattcenter.iastate.edu/directory/tulsi-gabbard/",
+      "snippet": "Tulsi Gabbard served as the representative for Hawaii's 2nd Congressional District from 2013-2021, the first American Samoan Congresswoman and first practicing ..."
+    },
+    {
+      "position": 4,
+      "title": "55 Things You Need to Know About Kamala Harris",
+      "link": "https://www.politico.com/news/magazine/2020/08/11/kamala-harris-vp-background-bio-biden-running-mate-2020-393885",
+      "snippet": "A quick primer on the life of Kamala Devi Harris, the trailblazing prosecutor-turned-senator who in just a few months' time could be a heartbeat away from the ..."
+    },
+    {
+      "position": 5,
+      "title": "Tulsi Gabbard - 2020, Policies & Age",
+      "link": "https://www.biography.com/political-figure/tulsi-gabbard",
+      "snippet": "Tulsi Gabbard was the U.S. representative for Hawaii's 2nd congressional district from 2013 to 2021. She is an Iraq war veteran."
+    },
+    {
+      "position": 6,
+      "title": "Former Rep. Tulsi Gabbard - D Hawaii, 2nd, Ran for Other ...",
+      "link": "https://www.legistorm.com/person/bio/36630/Tulsi_Gabbard.html",
+      "snippet": "Summary. GABBARD, Tulsi, a Representative from Hawaii; born in Leloaloa, American Samoa, April 12, 1981; B.S.B.A., Hawaii Pacific University, Honolulu ..."
+    },
+    {
+      "position": 7,
+      "title": "Kamala Harris - Archives of Women's Political Communication",
+      "link": "https://awpc.cattcenter.iastate.edu/directory/kamala-harris/",
+      "snippet": "Kamala D. Harris assumed office as vice president of the United States on Jan. 20, 2021, the first woman to serve in that office."
+    },
+    {
+      "position": 8,
+      "title": "Who Is Tulsi Gabbard? Bio, Age, Family, and Key Positions",
+      "link": "https://www.businessinsider.com/who-is-tulsi-gabbard-bio-age-family-key-positions-2019-4",
+      "snippet": "Tulsi Gabbard is running for president in 2020. Here's everything we know about the candidate and how she stacks up against the competition."
+    },
+    {
+      "position": 9,
+      "title": "The Kamala Harris cheat sheet: 18 things to know about ...",
+      "link": "https://www.theguardian.com/us-news/article/2024/jul/22/kamala-harris-cheat-sheet-19-things-to-know-woman-might-be-president",
+      "snippet": "Get up to speed with the Democrat frontrunner \u2013 who officiated the first gay wedding in California and won a huge victory when she went to war with the ..."
+    },
+    {
+      "position": 10,
+      "title": "How Tulsi Gabbard's big moment with Harris is playing into ...",
+      "link": "https://www.nbcnews.com/politics/2024-election/tulsi-gabbard-big-moment-kamala-harris-tuesday-debate-rcna169234",
+      "snippet": "In a 2019 Democratic presidential primary debate, Gabbard gained attention for her stinging criticism of Harris' record. Now, she's helping Trump prep for ..."
+    }
+  ]
 }
 
 ==================================================
@@ -44,7 +98,7 @@ Iteration 3
 ==================================================
 assistant: Thought: ```json
 {
- "thought": "I have gathered the birth dates for both Kamala Harris (October 20, 1964) and Tulsi Gabbard (April 12, 1981) from Wikipedia. I can now compare these dates to determine who is older.",
+ "thought": "The Google search results provided snippets with the birth dates for both Kamala Harris and Tulsi Gabbard.  Kamala Harris was born on October 20, 1964. Tulsi Gabbard was born on April 12, 1981. Based on this, Kamala Harris is older than Tulsi Gabbard.",
  "answer": "Kamala Harris is older than Tulsi Gabbard. Kamala Harris was born on October 20, 1964, while Tulsi Gabbard was born on April 12, 1981."
 }
 ```
