@@ -171,7 +171,7 @@ class Agent:
         )
 
         response = self.ask_gemini(prompt)
-        logger.info(f"Thought: {response}")
+        logger.info(f"Thinking => {response}")
         self.trace("assistant", f"Thought: {response}")
         self.decide(response)
 
@@ -277,10 +277,11 @@ def run(query: str) -> str:
     agent.register(Name.GOOGLE, google_search)
 
     answer = agent.execute(query)
-    logger.info(f"Final answer: {answer}")
     return answer
+
 
 if __name__ == "__main__":
     query = 'who is older, kamala or tulsi gabbard'
-    answer = run(query)
-    logger.info(answer)
+    final_answer = run(query)
+    logger.info(final_answer)
+    
