@@ -1,8 +1,10 @@
 from vertexai.generative_models import GenerativeModel
 from src.tools.serp import search as google_search
 from src.tools.wiki import search as wiki_search
+from vertexai.generative_models import Part 
 from src.config.logging import logger
 from src.config.setup import config
+from src.llm.gemini import generate
 from pydantic import BaseModel
 from typing import Callable
 from pydantic import Field 
@@ -11,121 +13,154 @@ from typing import Dict
 from typing import List 
 from enum import Enum
 from enum import auto 
+import json 
 
 
 Observation = Union[str, Exception]
 
+model = GenerativeModel(config.GEMINI_MODEL_NAME)
+
 class Name(Enum):
-    """
-    Enumeration of available tools.
-    """
     WIKIPEDIA = auto()
     GOOGLE = auto()
+    NONE = auto()
 
     def __str__(self) -> str:
         return self.name.lower()
 
-
 class Choice(BaseModel):
-    """
-    Represents a tool choice with a reason.
-    """
     name: Name = Field(..., description="The name of the tool chosen.")
     reason: str = Field(..., description="The reason for choosing this tool.")
 
-
 class Message(BaseModel):
-    """
-    Represents a message exchanged within the agent.
-    """
     role: str = Field(..., description="The role of the message sender.")
     content: str = Field(..., description="The content of the message.")
 
-
 class Tool:
-    """
-    Represents a tool with its execution function.
-    """
     def __init__(self, name: Name, func: Callable[[str], str]):
         self.name = name
         self.func = func
 
     def use(self, query: str) -> Observation:
-        """
-        Execute the tool's function and handle exceptions.
-        """
         try:
             return self.func(query)
         except Exception as e:
             logger.error(f"Error executing tool {self.name}: {e}")
-            return e
-
+            return str(e)
 
 class Agent:
-    """
-    An agent that manages tools and processes queries.
-    """
     def __init__(self, model: GenerativeModel) -> None:
         self.model = model
         self.tools: Dict[Name, Tool] = {}
         self.messages: List[Message] = []
+        self.query = ""
+        self.max_iterations = 5
+        self.current_iteration = 0
 
     def register(self, name: Name, func: Callable[[str], str]) -> None:
-        """
-        Register a new tool.
-        """
         self.tools[name] = Tool(name, func)
 
-    def append(self, role: str, content: str) -> None:
-        """
-        Append a new message to the message history.
-        """
+    def trace(self, role: str, content: str) -> None:
         self.messages.append(Message(role=role, content=content))
 
-    def think(self, query: str) -> Choice:
-        """
-        Decide which tool to use based on the query.
-        """
-        # Simplified example decision logic
-        if "who" in query:
-            choice = Choice(name=Name.WIKIPEDIA, reason="Query is informational.")
-        else:
-            choice = Choice(name=Name.GOOGLE, reason="General search is needed.")
-        return choice
+    def get_history(self) -> str:
+        return "\n".join([f"{message.role}: {message.content}" for message in self.messages])
 
-    def act(self, query: str) -> Observation:
-        """
-        Execute the chosen tool based on the query.
-        """
-        choice = self.think(query)
-        tool = self.tools.get(choice.name)
+    def think(self) -> None:
+        self.current_iteration += 1
+        if self.current_iteration > self.max_iterations:
+            logger.warning("Reached maximum iterations. Stopping.")
+            self.trace("assistant", "I'm sorry, but I couldn't find a satisfactory answer within the allowed number of iterations. Here's what I know so far: " + self.get_history())
+            return
+
+        prompt = f"""You are a ReAct agent. Answer the following query as best you can: {self.query}.
+                    Previous context:
+                    {self.get_history()}
+                    First, think about what to do. What action to take first, if any.
+                    Available tools: {', '.join([str(tool.name) for tool in self.tools.values()])}
+                    
+                    Respond in the following JSON format:
+                    {{
+                        "thought": "Your reasoning about what to do next",
+                        "action": {{
+                            "name": "The name of the tool to use (wikipedia, google, or none)",
+                            "reason": "Why you chose this tool or why you chose none"
+                        }}
+                    }}
+                    
+                    If you have enough information to answer the query, respond with:
+                    {{
+                        "thought": "Your final reasoning",
+                        "answer": "Your final answer to the query"
+                    }}
+                    """
+
+        self.trace("system", prompt)
+        response = self.ask_gemini(prompt)
+        logger.info(f"Thought: {response}")
+        self.trace("assistant", response)
+        self.process_response(response)
+
+    def process_response(self, response: str) -> None:
+        try:
+            cleaned_response = response.strip().strip('`').strip()
+            if cleaned_response.startswith('json'):
+                cleaned_response = cleaned_response[4:].strip()
+            
+            parsed_response = json.loads(cleaned_response)
+            
+            if "action" in parsed_response:
+                action = parsed_response["action"]
+                tool_name = Name[action["name"].upper()]
+                if tool_name == Name.NONE:
+                    logger.info("No action needed. Proceeding to final answer.")
+                    self.think()
+                else:
+                    self.act(tool_name, self.query)
+            elif "answer" in parsed_response:
+                self.trace("assistant", parsed_response["answer"])
+            else:
+                raise ValueError("Invalid response format")
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse response: {response}. Error: {str(e)}")
+            self.trace("assistant", "I encountered an error in processing. Let me try again.")
+            self.think()
+        except Exception as e:
+            logger.error(f"Error processing response: {str(e)}")
+            self.trace("assistant", "I encountered an unexpected error. Let me try a different approach.")
+            self.think()
+
+    def act(self, tool_name: Name, query: str) -> None:
+        tool = self.tools.get(tool_name)
         if tool:
-            return tool.use(query)
-        logger.error(f"No tool registered for choice: {choice.name}")
-        return Exception("Tool not found")
+            result = tool.use(query)
+            self.trace("system", f"Observation: {result}")
+            self.think()
+        else:
+            logger.error(f"No tool registered for choice: {tool_name}")
+            self.trace("system", f"Error: Tool {tool_name} not found")
+            self.think()
 
     def execute(self, query: str) -> str:
-        """
-        Process the query end-to-end by choosing, acting, and observing results.
-        """
-        self.append(role="user", content=query)
-        result = self.act(query)
-        response = str(result) if isinstance(result, str) else "An error occurred."
-        self.append(role="agent", content=response)
-        return response
+        self.query = query
+        self.trace(role="user", content=query)
+        self.think()
+        return self.messages[-1].content
 
+    def ask_gemini(self, prompt: str) -> str:
+        contents = [Part.from_text(prompt)]
+        response = generate(self.model, contents)
+        return str(response) if response is not None else "No response from Gemini"
 
 def run(query: str) -> str:
     gemini = GenerativeModel(config.GEMINI_MODEL_NAME)
 
-    # Create and set up ReAct agent
     agent = Agent(model=gemini)
     agent.register(Name.WIKIPEDIA, wiki_search)
     agent.register(Name.GOOGLE, google_search)
 
     answer = agent.execute(query)
     return answer
-
 
 if __name__ == "__main__":
     query = 'Who is Sachin Tendulkar and what is his connection to tennis?'
