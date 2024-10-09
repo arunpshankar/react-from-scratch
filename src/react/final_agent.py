@@ -183,6 +183,6 @@ def run(query: str) -> str:
     return answer
 
 if __name__ == "__main__":
-    query = 'when was frisco, tx founded?'
+    query = 'who is older, kamala or tulsi gabbard'
     answer = run(query)
     logger.info(answer)
