@@ -28,12 +28,10 @@ class Config:
         
         self.__config = self._load_config(config_path)
         self.PROJECT_ID = self.__config['project_id']
-        self.GEMINI_REGION = self.__config['gemini_region']
-        self.ANTHROPIC_REGION = self.__config['anthropic_region']
+        self.REGION = self.__config['region']
         self.CREDENTIALS_PATH = self.__config['credentials_json']
         self._set_google_credentials(self.CREDENTIALS_PATH)
-        self.GEMINI_MODEL_NAME = self.__config['gemini_model']
-        self.ANTHROPIC_MODEL_NAME = self.__config['anthropic_model']
+        self.MODEL_NAME = self.__config['model_name']
 
     @staticmethod
     def _load_config(config_path: str) -> Dict[str, Any]:
