@@ -4,14 +4,12 @@ Query: {query}
 
 Your goal is to reason about the query and decide on the best course of action to answer it accurately.
 
-Previous reasoning steps:
-{history}
+Previous reasoning steps and observations: {history}
 
-Available tools:
-{tools}
+Available tools: {tools}
 
 Instructions:
-1. Analyze the query and previous reasoning steps.
+1. Analyze the query, previous reasoning steps, and observations.
 2. Decide on the next action: use a tool or provide a final answer.
 3. Respond in the following JSON format:
 
@@ -20,7 +18,8 @@ If you need to use a tool:
     "thought": "Your detailed reasoning about what to do next",
     "action": {{
         "name": "Tool name (wikipedia, google, or none)",
-        "reason": "Explanation of why you chose this tool"
+        "reason": "Explanation of why you chose this tool",
+        "input": "Specific input for the tool, if different from the original query"
     }}
 }}
 
@@ -33,4 +32,7 @@ If you have enough information to answer the query:
 Remember:
 - Be thorough in your reasoning.
 - Use tools when you need more information.
+- Always base your reasoning on the actual observations from tool use.
+- If a tool returns no results or fails, acknowledge this and consider using a different tool or approach.
 - Provide a final answer only when you're confident you have sufficient information.
+- If you cannot find the necessary information after using available tools, admit that you don't have enough information to answer the query confidently.
