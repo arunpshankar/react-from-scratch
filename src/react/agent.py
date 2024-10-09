@@ -281,7 +281,7 @@ def run(query: str) -> str:
 
 
 if __name__ == "__main__":
-    query = 'who is older, kamala or tulsi gabbard'
+    query = "Who is older, Cristiano Ronaldo or Lionel Messi?"
     final_answer = run(query)
     logger.info(final_answer)
     

@@ -57,7 +57,7 @@ def generate(model: GenerativeModel, contents: List[Part]) -> Optional[str]:
         Optional[str]: The generated response text, or None if an error occurs.
     """
     try:
-        logger.info("Generating response from model")
+        logger.info("Generating response from Gemini")
         response = model.generate_content(
             contents,
             generation_config=_create_generation_config(),

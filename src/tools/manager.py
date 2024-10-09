@@ -108,9 +108,9 @@ def run() -> None:
     manager.register(Name.GOOGLE, google_search)
     
     test_cases = [
-        "/people kamala harris",
-        "/location greek restaurants in miami",
-        "What's the weather like today?",
+    "/people kamala harris",
+    "/location greek restaurants in miami",
+    "What's the weather like today?",
     ]
     
     for i, query in enumerate(test_cases, 1):
