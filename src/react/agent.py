@@ -20,6 +20,9 @@ import json
 
 Observation = Union[str, Exception]
 
+PROMPT_TEMPLATE_PATH = "./data/input/react.txt"
+OUTPUT_TRACE_PATH = "./data/output/trace.txt"
+
 class Name(Enum):
     """
     Enumeration for tool names available to the agent.
@@ -102,7 +105,6 @@ class Agent:
         self.query = ""
         self.max_iterations = 5
         self.current_iteration = 0
-        self.output_file = f"./data/output/trace.txt"
         self.template = self.load_template()
 
     def load_template(self) -> str:
@@ -112,7 +114,7 @@ class Agent:
         Returns:
             str: The content of the prompt template file.
         """
-        return read_file('./data/input/react.txt')
+        return read_file(PROMPT_TEMPLATE_PATH)
 
     def register(self, name: Name, func: Callable[[str], str]) -> None:
         """
@@ -134,7 +136,7 @@ class Agent:
         """
         if role != "system":
             self.messages.append(Message(role=role, content=content))
-        write_to_file(path='./data/output/trace.txt', content=f"{role}: {content}\n")
+        write_to_file(path=OUTPUT_TRACE_PATH, content=f"{role}: {content}\n")
 
     def get_history(self) -> str:
         """
@@ -151,7 +153,7 @@ class Agent:
         """
         self.current_iteration += 1
         logger.info(f"Starting iteration {self.current_iteration}")
-        write_to_file(path='./data/output/trace.txt', content=f"\n{'='*50}\nIteration {self.current_iteration}\n{'='*50}\n")
+        write_to_file(path=OUTPUT_TRACE_PATH, content=f"\n{'='*50}\nIteration {self.current_iteration}\n{'='*50}\n")
 
         if self.current_iteration > self.max_iterations:
             logger.warning("Reached maximum iterations. Stopping.")
