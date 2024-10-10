@@ -1,0 +1,18 @@
+graph TD
+    A[Start] --> B[Initialize Agent]
+    B --> C[Receive Query]
+    C --> D{Think}
+    D --> |Reason| E[Decide Action]
+    E --> F{Choose Tool}
+    F --> |Google| G[Use Google]
+    F --> |Wikipedia| H[Use Wikipedia]
+    F --> |No Tool| I[Formulate Answer]
+    G --> J[Observe Result]
+    H --> J
+    J --> D
+    I --> K[Trace Final Answer]
+    K --> L[End]
+
+    style D fill:#f9f,stroke:#333,stroke-width:4px
+    style F fill:#bbf,stroke:#333,stroke-width:2px
+    style J fill:#bfb,stroke:#333,stroke-width:2px
