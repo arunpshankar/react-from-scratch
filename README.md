@@ -1,12 +1,13 @@
 # 🤖 Building ReAct Agents from Scratch: A Hands-On Guide
 
-This repository provides a comprehensive collection of examples demonstrating the effective implementation of the ReAct (Reasoning and Acting) pattern in Large Language Model (LLM) prompting. It includes various implementations and optimizations of agents leveraging the ReAct pattern, with a focus on the Gemini model.
+This repository provides a comprehensive guide and implementation for creating ReAct (Reasoning and Acting) agents from scratch using Python and leveraging Google's Gemini as the Large Language Model (LLM) of choice.
 
 ## 📚 Contents
 
-- Multiple examples of ReAct pattern implementations
-- Variations of ReAct-based agents
+- Step-by-step implementation of the ReAct pattern
+- Multiple examples showcasing ReAct agents in action
 - Optimizations specific to the Gemini model
+- Tools integration (Google Search and Wikipedia)
 
 ## 🚀 Getting Started
 
@@ -14,7 +15,7 @@ This repository provides a comprehensive collection of examples demonstrating th
 
 - Python 3.8+
 - Git
-- Poetry
+- Poetry (for dependency management)
 
 ### Installation
 
@@ -24,22 +25,21 @@ This repository provides a comprehensive collection of examples demonstrating th
    cd react-agents-from-scratch
    ```
 
-2. Create and activate a virtual environment:
+2. Set up a virtual environment:
    ```
-   python -m venv .react-from-scratch
-   source .react-from-scratch/bin/activate  # On Windows, use `.react-from-scratch\Scripts\activate`
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows, use `.venv\Scripts\activate`
    ```
 
-3. Install Poetry if you haven't already:
+3. Install Poetry (if not already installed):
    ```
    pip install poetry
    ```
 
-4. Install project dependencies using Poetry:
+4. Install project dependencies:
    ```
    poetry install
    ```
-   This command will read the `pyproject.toml` file and install all required dependencies.
 
 5. Set up environment variables:
    ```
@@ -49,34 +49,57 @@ This repository provides a comprehensive collection of examples demonstrating th
 
 ### Setting up Credentials
 
-1. Create a `credentials` folder in the root of the project:
+1. Create a `credentials` folder in the project root:
    ```
    mkdir credentials
    ```
 
-2. Add your GCP service account credentials:
-   - Create a file named `key.json` in the `credentials` folder.
-   - Paste your GCP service account credentials into this file.
+2. Set up GCP service account credentials:
+   - Go to the Google Cloud Console (https://console.cloud.google.com/).
+   - Create a new project or select an existing one.
+   - Navigate to "APIs & Services" > "Credentials".
+   - Click "Create Credentials" > "Service Account Key".
+   - Select your service account, choose JSON as the key type, and click "Create".
+   - Save the downloaded JSON file as `key.json` in the `credentials` folder.
 
 3. Set up SERP API credentials:
+   - Sign up for a SERP API account at https://serpapi.com/.
+   - Obtain your API key from the dashboard.
    - Create a file named `key.yml` in the `credentials` folder.
-   - Add your SERP API token to this file in the following format:
+   - Add your SERP API token in the following format:
      ```yaml
-     serp_api_token: your_serp_api_token_here
+     serp:
+       key: your_serp_api_key_here
      ```
 
-## 🛠️ Usage
+Note: The `credentials` folder is included in `.gitignore` to prevent sensitive information from being committed.
 
-To use the ReAct agents:
+## 🛠️ Project Structure
 
-1. Ensure you're in the project's root directory and your virtual environment is activated.
+- `src/tools/`: Contains implementations for Google Search (via SERP API) and Wikipedia search.
+- `src/react/`: Houses the core ReAct agent implementation.
+- `data/input/`: Stores input prompts for the ReAct agent.
+- `data/output/`: Contains output traces from example runs.
 
-2. Run the desired example script:
+## 🖥️ Usage
+
+1. Ensure you're in the project root directory with your virtual environment activated.
+
+2. Run the ReAct agent:
    ```
-   python examples/example_script.py
+   python src/react/agent.py
    ```
 
-[Add more specific usage instructions for your implemented agents here]
+3. The agent uses the prompt from `./data/input/react.txt` and generates output traces in `./data/output/`.
+
+4. To run individual tools:
+   - Google Search: `python src/tools/serp.py`
+   - Wikipedia Search: `python src/tools/wiki.py`
+
+5. For a non-agentic approach with programmatic routing:
+   ```
+   python src/tools/manager.py
+   ```
 
 ## 🤝 Contributing
 
@@ -84,4 +107,8 @@ We welcome contributions! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for 
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## 📚 Further Reading
+
+For a detailed explanation of the ReAct pattern and this implementation, check out our accompanying Medium article: [Link to your Medium article]
