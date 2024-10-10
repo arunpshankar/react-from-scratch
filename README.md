@@ -2,6 +2,8 @@
 
 This repository provides a comprehensive guide and implementation for creating ReAct (Reasoning and Acting) agents from scratch using Python and leveraging Google's Gemini as the Large Language Model (LLM) of choice.
 
+![ReAct Agent](./img/react-agent.png "ReAct Agent")
+
 ## 📚 Contents
 
 - Step-by-step implementation of the ReAct pattern
@@ -80,6 +82,8 @@ Note: The `credentials` folder is included in `.gitignore` to prevent sensitive 
 - `src/react/`: Houses the core ReAct agent implementation.
 - `data/input/`: Stores input prompts for the ReAct agent.
 - `data/output/`: Contains output traces from example runs.
+
+![Think Act Observe Loop](./img/think_act_observe_loop.png "Think Act Observe Loop")
 
 ## 🖥️ Usage
 
