@@ -2,6 +2,7 @@ from vertexai.generative_models import GenerativeModel
 from src.tools.serp import search as google_search
 from src.tools.wiki import search as wiki_search
 from vertexai.generative_models import Part 
+from src.utils.io import write_to_file
 from src.config.logging import logger
 from src.config.setup import config
 from src.llm.gemini import generate
@@ -133,7 +134,7 @@ class Agent:
         """
         if role != "system":
             self.messages.append(Message(role=role, content=content))
-        self.write_to_file(f"{role}: {content}\n")
+        write_to_file(path='./data/output/trace.txt', content=f"{role}: {content}\n")
 
     def get_history(self) -> str:
         """
@@ -150,7 +151,7 @@ class Agent:
         """
         self.current_iteration += 1
         logger.info(f"Starting iteration {self.current_iteration}")
-        self.write_to_file(f"\n{'='*50}\nIteration {self.current_iteration}\n{'='*50}\n")
+        write_to_file(path='./data/output/trace.txt', content=f"\n{'='*50}\nIteration {self.current_iteration}\n{'='*50}\n")
 
         if self.current_iteration > self.max_iterations:
             logger.warning("Reached maximum iterations. Stopping.")
@@ -274,7 +275,7 @@ def run(query: str) -> str:
 
 
 if __name__ == "__main__":
-    query = "What is the most common ingredient in the national dishes of the top 5 countries by GDP?"
+    query = "What is the age of the oldest tree in the country that has won the most FIFA World Cup titles?"
     final_answer = run(query)
     logger.info(final_answer)
     
