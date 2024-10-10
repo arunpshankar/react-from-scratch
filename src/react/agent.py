@@ -5,6 +5,7 @@ from vertexai.generative_models import Part
 from src.config.logging import logger
 from src.config.setup import config
 from src.llm.gemini import generate
+from src.utils.io import read_file
 from pydantic import BaseModel
 from typing import Callable
 from pydantic import Field 
@@ -98,20 +99,19 @@ class Agent:
         self.tools: Dict[Name, Tool] = {}
         self.messages: List[Message] = []
         self.query = ""
-        self.max_iterations = 30
+        self.max_iterations = 5
         self.current_iteration = 0
         self.output_file = f"./data/output/trace.txt"
-        self.prompt_template = self.load_prompt_template()
+        self.template = self.load_template()
 
-    def load_prompt_template(self) -> str:
+    def load_template(self) -> str:
         """
         Loads the prompt template from a file.
 
         Returns:
             str: The content of the prompt template file.
         """
-        with open("./data/input/react.txt", "r") as file:
-            return file.read()
+        return read_file('./data/input/react.txt')
 
     def register(self, name: Name, func: Callable[[str], str]) -> None:
         """
@@ -135,13 +135,6 @@ class Agent:
             self.messages.append(Message(role=role, content=content))
         self.write_to_file(f"{role}: {content}\n")
 
-    def write_to_file(self, content: str) -> None:
-        """
-        Appends content to the output trace file.
-        """
-        with open(self.output_file, 'a', encoding='utf-8') as f:
-            f.write(content)
-
     def get_history(self) -> str:
         """
         Retrieves the conversation history.
@@ -164,7 +157,7 @@ class Agent:
             self.trace("assistant", "I'm sorry, but I couldn't find a satisfactory answer within the allowed number of iterations. Here's what I know so far: " + self.get_history())
             return
 
-        prompt = self.prompt_template.format(
+        prompt = self.template.format(
             query=self.query, 
             history=self.get_history(),
             tools=', '.join([str(tool.name) for tool in self.tools.values()])

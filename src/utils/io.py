@@ -85,3 +85,25 @@ def load_json(filename: str) -> Optional[Dict[str, Any]]:
         logger.error(f"Error loading JSON file: {e}")
         raise
 
+
+def write_to_file(path: str, content: str) -> None:
+    """
+    Writes content to a specified file. Appends to the file if it already exists.
+
+    Args:
+        path (str): The path to the file.
+        content (str): The content to write to the file.
+
+    Raises:
+        Exception: For any other exceptions encountered during file writing.
+    """
+    try:
+        with open(path, 'a', encoding='utf-8') as file:
+            file.write(content)
+        logger.info(f"Content written to file: {path}")
+    except FileNotFoundError:
+        logger.error(f"File not found: {path}")
+        raise
+    except Exception as e:
+        logger.error(f"Error writing to file '{path}': {e}")
+        raise
