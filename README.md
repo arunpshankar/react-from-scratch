@@ -83,7 +83,7 @@ Note: The `credentials` folder is included in `.gitignore` to prevent sensitive 
 - `data/input/`: Stores input prompts for the ReAct agent.
 - `data/output/`: Contains output traces from example runs.
 
-![Think Act Observe Loop](./img/think_act_observe_loop.png "Think Act Observe Loop")
+<img src="./img/think_act_observe_loop.png" alt="Think Act Observe Loop" width="50%">
 
 ## 🖥️ Usage
 
