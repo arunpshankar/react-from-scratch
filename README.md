@@ -82,8 +82,9 @@ Note: The `credentials` folder is included in `.gitignore` to prevent sensitive 
 - `src/react/`: Houses the core ReAct agent implementation.
 - `data/input/`: Stores input prompts for the ReAct agent.
 - `data/output/`: Contains output traces from example runs.
-
-<img src="./img/think_act_observe_loop.png" alt="Think Act Observe Loop" width="50%">
+<div style="text-align: center;">
+    <img src="./img/think_act_observe_loop.png" alt="Think Act Observe Loop" width="50%">
+</div>
 
 ## 🖥️ Usage
 
