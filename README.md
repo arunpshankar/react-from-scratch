@@ -1,4 +1,4 @@
-# 🤖 Building ReAct Agents from Scratch: A Hands-On Guide
+# 🤖 Building ReAct Agents from Scratch: A Hands-On Guide with Gemini
 
 This repository provides a comprehensive guide and implementation for creating ReAct (Reasoning and Acting) agents from scratch using Python and leveraging Google's Gemini as the Large Language Model (LLM) of choice.
 
