@@ -117,4 +117,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## 📚 Further Reading
 
-For a detailed explanation of the ReAct pattern and this implementation, check out our accompanying Medium article: [Link to your Medium article]
+For a detailed explanation of the ReAct pattern and this implementation, check out our accompanying Medium article: [[Link to your Medium article](https://medium.com/google-cloud/building-react-agents-from-scratch-a-hands-on-guide-using-gemini-ffe4621d90ae)]
