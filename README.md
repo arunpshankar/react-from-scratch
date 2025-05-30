@@ -23,7 +23,7 @@ This repository provides a comprehensive guide and implementation for creating R
 
 1. Clone the repository:
    ```
-   git clone https://github.com/username/react-agents-from-scratch.git
+   git clone https://github.com/username/react-from-scratch.git
    cd react-agents-from-scratch
    ```
 
